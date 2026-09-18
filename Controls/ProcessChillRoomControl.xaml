@@ -1,0 +1,507 @@
+﻿<UserControl x:Class="WPFSCADA.Controls.ProcessChillRoomControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:WPFSCADA.Controls"
+             xmlns:root="clr-namespace:WPFSCADA"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="400"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <!-- Reusable labeled toggle style (works with local:LabeledToggleButton) -->
+        <Style x:Key="ToggleStyle" TargetType="{x:Type root:LabeledToggleButton}">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <!-- thin border defaults -->
+            <Setter Property="BorderBrush" Value="#FFD0D7DE"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="root:LabeledToggleButton">
+                        <Border x:Name="Root" CornerRadius="0" Background="#fff" SnapsToDevicePixels="True"
+                  BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <!--<Border.Effect>
+                  <DropShadowEffect BlurRadius="8" ShadowDepth="3" Opacity="0.5"/>
+              </Border.Effect>-->
+                            <Grid ClipToBounds="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- sliding thumb — use TranslateTransform for animation #1E73E8-->
+                                <Border x:Name="Thumb" CornerRadius="0" Grid.Column="0" Background="{StaticResource PrimaryGreenBrush}">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform x:Name="ThumbTransform" X="0" />
+                                    </Border.RenderTransform>
+                                </Border>
+
+                                <!-- labels bound to the control's properties -->
+                                <TextBlock Padding="2" x:Name="LeftLabel" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" FontWeight="DemiBold" Foreground="White" Text="{TemplateBinding OffText}"/>
+                                <TextBlock Padding="2" x:Name="RightLabel" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" FontWeight="DemiBold" Foreground="#333" Text="{TemplateBinding OnText}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#e7f6ff"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="LeftLabel" Property="Foreground" Value="#333"/>
+                                <Setter TargetName="RightLabel" Property="Foreground" Value="White"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="49" Duration="0:0:0.12" FillBehavior="HoldEnd" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.12" FillBehavior="HoldEnd" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Viewbox Stretch="Uniform">
+            <Border Style="{StaticResource DashboardCard}" Margin="3">
+                <Canvas Width="400" Height="400">
+                    <Image x:Name="coldStoreBox" Width="150"
+            Canvas.Left="235"
+            Canvas.Top="170"
+            Source="/WPFSCADA;component/images/ColdStore_Box.png"/>
+
+                    <Grid Canvas.Left="235" Canvas.Top="170" Width="150" Height="60">
+                        <Canvas Width="150" Height="60" Panel.ZIndex="4">
+                            <Path Name="bluePath" Stroke="DodgerBlue" StrokeThickness="2" StrokeLineJoin="Round" >
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="0,10" IsClosed="False">
+                                            <LineSegment Point="140,10"/>
+                                            <QuadraticBezierSegment Point1="143,13" Point2="140,16"/>
+                                            <LineSegment Point="15,16"/>
+                                            <QuadraticBezierSegment Point1="12,19" Point2="15,22"/>
+                                            <LineSegment Point="140,22"/>
+                                            <QuadraticBezierSegment Point1="143,25" Point2="140,28"/>
+                                            <LineSegment Point="15,28"/>
+                                            <QuadraticBezierSegment Point1="12,31" Point2="15,34"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+                            <Path Name="orangePath" Stroke="Orange" StrokeThickness="2" StrokeLineJoin="Round">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="15,28">
+                                            <QuadraticBezierSegment Point1="12,31" Point2="15,34"/>
+                                            <LineSegment Point="140,34"/>
+                                            <QuadraticBezierSegment Point1="143,37" Point2="140,39"/>
+                                            <LineSegment Point="15,40"/>
+                                            <QuadraticBezierSegment Point1="12,43" Point2="15,46"/>
+                                            <LineSegment Point="140,46"/>
+                                            <QuadraticBezierSegment Point1="143,49" Point2="140,52"/>
+                                            <LineSegment Point="0,52"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+                            <Image x:Name="coldStoreBase" Width="160" Height='25' Canvas.Top="57"
+                    Source="/WPFSCADA;component/images/CS_Base.png" Stretch="UniformToFill"
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="-7"/>
+                            <Grid Width="138" Height="60" Name='fansGrid' Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20*"/>
+                                    <ColumnDefinition Width="20*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="3*"/>
+                                    <RowDefinition Height="15*"/>
+                                    <RowDefinition Height="2*"/>
+                                </Grid.RowDefinitions>
+                                <!-- Fan 0 -->
+                                <Ellipse Grid.Row="1" Fill="#E3E3E3" Opacity="0.4" Stroke="DarkGray" StrokeThickness="3" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="0" IsHitTestVisible="False" Width="46" Height="46"/>
+                                <Image x:Name="fanRing0" Source="/WPFSCADA;component/images/Fan_Ring.png" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="1" Height="46" Width="46"/>
+                                <Image x:Name="fanGreen0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="2" Width="35" Height="35" RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <RotateTransform />
+                                    </Image.RenderTransform>
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Source" Value="/WPFSCADA;component/images/fanRed.png"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Fan1RunFB, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                                    <Setter Property="Source" Value="/WPFSCADA;component/images/fanGreen.png"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard Name="sbFan0">
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" To="360" Duration="0:0:2" />
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <StopStoryboard BeginStoryboardName="sbFan0" />
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <!-- Fan 1 -->
+                                <Ellipse Grid.Column="2" Grid.Row="1" Fill="#E3E3E3" Opacity="0.4" Stroke="DarkGray" StrokeThickness="3" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="0" IsHitTestVisible="False" Width="46" Height="46"/>
+                                <Image x:Name="fanRing1" Source="/WPFSCADA;component/images/Fan_Ring.png" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="1" Height="46" Width="46"/>
+                                <Image x:Name="fanGreen1" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="2" Height="35" Width="35" RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <RotateTransform />
+                                    </Image.RenderTransform>
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Source" Value="/WPFSCADA;component/images/fanRed.png"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Fan2RunFB, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                                    <Setter Property="Source" Value="/WPFSCADA;component/images/fanGreen.png"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard Name="sbFan1">
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" To="360" Duration="0:0:2" />
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <StopStoryboard BeginStoryboardName="sbFan1" />
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                            </Grid>
+                        </Canvas>
+                    </Grid>
+                    <Grid Name="mainGrid" Width="400" Height="400">
+                        <Canvas Width="400" Height="400">
+                            <Path Name="mainOrangePath" Stroke="Orange" Panel.ZIndex="3"
+                    StrokeThickness="3" StrokeLineJoin="Round">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="20,-25">
+                                            <LineSegment Point="20,212"/>
+                                            <QuadraticBezierSegment Point1="20,222" Point2="30,222"/>
+                                            <LineSegment Point="235,222"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+                            <Path Name="mainBluePath" Stroke="DodgerBlue" Panel.ZIndex="2"
+                    StrokeThickness="3" StrokeLineJoin="Round">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="30,-48">
+                                            <LineSegment Point="30,180"/>
+                                            <QuadraticBezierSegment Point1="30,180" Point2="40,180"/>
+                                            <LineSegment Point="220,180"/>
+                                            <LineSegment Point="235,180"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+
+
+                            <Image x:Name="valve1" Width="22" Panel.ZIndex="6"
+    Canvas.Top="163" Canvas.Left="141" 
+    Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+    HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5">
+                                <Image.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="-1"/>
+                                        <SkewTransform/>
+                                        <RotateTransform/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Image.RenderTransform>
+                            </Image>
+                            <Image x:Name="pmflValve1" Width="18" Panel.ZIndex="6"
+    Canvas.Top="163" Canvas.Left="100"
+    HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Source" Value="/WPFSCADA;component/images/pmflValveRed.png" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SsvFb, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                                <Setter Property="Source" Value="/WPFSCADA;component/images/PMFL_Volve_Green.png" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+
+                            <Image x:Name="fgValve1" Width="15" Panel.ZIndex="6"
+                                   Canvas.Left="31" Canvas.Top="210"
+                                   Source="/WPFSCADA;component/images/fgfg_Volve copy.png" 
+                                   HorizontalAlignment="Center" VerticalAlignment="Top"/>
+
+                            <Image x:Name="revValve1" Width="12" Panel.ZIndex="6"
+                                   Canvas.Left="72" Canvas.Top="220"
+                                   Source="/WPFSCADA;component/images/Valve2 copy.png" 
+                                   HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Image.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="-1"/>
+                                        <SkewTransform/>
+                                        <RotateTransform/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Image.RenderTransform>
+                            </Image>
+
+                            <Image x:Name="pmflValve3" Width="18" Panel.ZIndex="6"
+                                   Canvas.Top="205" Canvas.Left="88"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Source" Value="/WPFSCADA;component/images/pmflValveRed.png" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding LsvFb, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                                <Setter Property="Source" Value="/WPFSCADA;component/images/PMFL_Volve_Green.png" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+
+                            <Image x:Name="fgValve2" Width="15" Panel.ZIndex="6"
+                                   Canvas.Left="134" Canvas.Top="210"
+                                   Source="/WPFSCADA;component/images/fgfg_Volve copy.png" 
+                                   HorizontalAlignment="Left" VerticalAlignment="Center">
+
+                            </Image>
+
+                            <Image x:Name="valve5" Width="22" Panel.ZIndex="6"
+                                   Canvas.Top="206" Canvas.Left="163"
+                                   Source="/WPFSCADA;component/images/Straight_Volve copy.png"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            </Image>
+
+                            <!--UnitName-->
+                            <TextBlock Canvas.Top="5" Canvas.Left="60"
+                              Text="{Binding UnitName, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                     Foreground="#000" FontSize="16" FontWeight="DemiBold" Margin="5,0,0,0"/>
+                           
+                            <controls:StatusCard
+                                Width="85"
+                                Height="52"
+                                Title="SET POINT"
+                                Value="{Binding SetPoint}"
+                                Unit="°C"                             
+                                Canvas.Left="150" 
+                                Canvas.Top="40" 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"/>
+
+                            <controls:StatusCard
+                                Width="85"
+                                Height="52"
+                                Title="EVP TEMP"
+                                Value="{Binding EvpTemp, StringFormat={}{0:N1}}"
+                                Unit="°C"
+                                Canvas.Left="40"
+                                Canvas.Top="40"
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Top"/>
+                            <controls:StatusCard
+                                Width="150"
+                                Height="52"
+                                Title="CHILL ROOM-1 TEMP"
+                                Value="{Binding ChillRoomTemp, StringFormat={}{0:N1}}"
+                                Unit="°C"
+                                Canvas.Left="70"
+                                Canvas.Top="100" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Top"/>
+                            <!--control panel on right-->
+                            <Border Style="{StaticResource DashboardCard}" Canvas.Top="5" Canvas.Left="245"
+                              Width="140" Height="140"
+                              HorizontalAlignment="Center" VerticalAlignment="Top">
+                                <!--header-->
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="13*"/>
+                                        <RowDefinition Height="87*"/>
+                                    </Grid.RowDefinitions>
+                                    <Border Grid.Row="0" Background="{StaticResource PrimaryBlueBrush}" 
+                                      CornerRadius="8,8,0,0">
+                                        <TextBlock FontSize="12" FontWeight="SemiBold" Text="CONTROLS"
+                                              Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Grid Grid.Row="1">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="25*"/>
+                                                <RowDefinition Height="25*"/>
+                                                <RowDefinition Height="25*"/>
+                                                <RowDefinition Height="25*"/>
+                                            </Grid.RowDefinitions>
+                                            <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
+                                                <root:LabeledToggleButton x:Name="RemoteLocalToggle" Margin="2" 
+                                                                      Canvas.Left="271" Canvas.Top="28" Style="{StaticResource ToggleStyle}" 
+                                                                      HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                                      IsChecked="False"
+                                                                      OffText="REMOTE" OnText="LOCAL" IsEnabled="False"
+                                                                      Checked="RemoteLocalToggle_Checked" Unchecked="RemoteLocalToggle_Unchecked">
+                                                </root:LabeledToggleButton>
+                                                <!--<Rectangle Height="2" Fill="#c2c2c2" />-->
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
+                                                <root:LabeledToggleButton x:Name="AutoManualToggle" Margin="2" 
+                                                                      Canvas.Left="271" Canvas.Top="59" Style="{StaticResource ToggleStyle}" 
+                                                                      HorizontalAlignment="Center" VerticalAlignment="Top" 
+                                                                      IsChecked="False"
+                                                                      OffText="AUTO" OnText="MANUAL">
+                                                </root:LabeledToggleButton>
+                                                <!--<Rectangle Height="1" Fill="#FFE3E8EE" />-->
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="2" Orientation="Vertical" VerticalAlignment="Center">
+                                                <Button x:Name="defrostButton" Margin="2"
+                                                  Canvas.Left="271" Canvas.Top="91" Style="{StaticResource roundedButtonStyle}" 
+                                                  HorizontalAlignment="Center" VerticalAlignment="Top"
+                                                  Content="MANUAL DEFROST">
+                                                </Button>
+                                                <!--<Rectangle Height="1" Fill="#FFE3E8EE"  />-->
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                                <!--fans start-->
+                                                <Button Margin="4" x:Name="FanStartButton" Grid.Column="0" Background="#169C4A"
+                                                  Style="{StaticResource ControlbuttonStyle}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <TextBlock FontSize="10" Text="▶" Margin="0,0,3,0"/>
+                                                        <TextBlock FontSize="8" Text="FANS START" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <!--fans stop-->
+                                                <Button Margin="4" x:Name="FanStopButton" Grid.Column="2"
+                                                  Style="{StaticResource ControlbuttonStyle}" Background="#D62828">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <TextBlock  FontSize="10" Text="■" Margin="0,0,3,0"/>
+                                                        <TextBlock FontSize="8" Text="FANS STOP" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                                <!--content-->
+                            </Border>
+
+                            <!-- Status panel at bottom -->
+                            <Border x:Name="statusPanel" Canvas.Left="50" Canvas.Top="290" Width="290" Height="85"
+                              Style="{StaticResource DashboardCard}" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Grid >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="30*"/>
+                                        <RowDefinition Height="3*"/>
+                                        <RowDefinition Height="23*"/>
+                                        <RowDefinition Height="03*"/>
+                                        <RowDefinition Height="23*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40*" />
+                                        <ColumnDefinition Width="25*" />
+                                        <ColumnDefinition Width="25*" />
+                                        <ColumnDefinition Width="25*" />
+                                    </Grid.ColumnDefinitions>
+                                    <!--0,0-->
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="RUNNING MODE : " 
+                                             VerticalAlignment="Center" Margin="8,0,0,0"
+                                             FontWeight="DemiBold" Foreground="#000" FontSize="9"/>
+                                    <!--0,1-->
+                                    <TextBlock x:Name="modeTextBlock" Grid.Row="0" Grid.Column="1" 
+                                             VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4,0,0,0"
+                                             Text="{Binding Mode, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                             FontWeight="DemiBold" FontSize="9">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <!-- default -->
+                                                <Setter Property="Foreground" Value="Gray" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Mode, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="0">
+                                                        <Setter Property="Foreground" Value="Gray" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Mode, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="1">
+                                                        <Setter Property="Foreground" Value="Green" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Mode, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="2">
+                                                        <Setter Property="Foreground" Value="Red" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <!--0,2-->
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="SET POINT" FontWeight="DemiBold" Foreground="#000" FontSize="9" />
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Margin="2,0,2,0" Text="hrs" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                            <TextBlock Text=":" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                            <TextBlock Margin="2,0,2,0" Text="mins" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <!--0,3-->
+                                    <StackPanel Grid.Row="0" Grid.Column="3" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="ELAPSED" FontWeight="DemiBold" Foreground="#000" FontSize="9"/>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Margin="2,0,2,0" Text="hrs" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                            <TextBlock Text=":" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                            <TextBlock Margin="2,0,2,0" Text="mins" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <!--LINE 1,0 -->
+                                    <Rectangle Grid.Row="1" Grid.Column="0" Margin="4,0,4,0" Grid.ColumnSpan="4" Fill="#FFE0E0E0" Height="2" VerticalAlignment="Top"/>
+                                    <!--2,0 2,1-->
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="FREEZING MODE TIME" 
+                                             Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="8,0,0,0"
+                                             FontWeight="DemiBold" Foreground="#000" FontSize="9"/>
+                                    <!--2,3-->
+                                    <StackPanel Grid.Row="2" Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Name="freezeHrsFB" Margin="2,0,2,0" Text="{Binding FreezeHrs, StringFormat='D2'}" Foreground="#000" VerticalAlignment="Center" FontSize="9" FontWeight="DemiBold"/>
+                                        <TextBlock Text=":" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                        <TextBlock Name="freezeMinsFB" Margin="2,0,2,0" Text="{Binding FreezeMins, StringFormat='D2'}" Foreground="#000" VerticalAlignment="Center" FontSize="9" FontWeight="DemiBold"/>
+                                    </StackPanel>
+
+                                    <!--LINE 5,0 -->
+                                    <Rectangle Grid.Row="3" Grid.Column="0" Margin="4,0,4,0" Grid.ColumnSpan="4" Fill="#FFE0E0E0" Height="2" VerticalAlignment="Top"/>
+                                    <!--6,0-->
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="DEFROSTING MODE TIME" 
+                                             Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="8,0,0,0"
+                                             FontWeight="DemiBold" Foreground="#000" FontSize="9"/>
+                                    <!--6,2-->
+                                    <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Name="defrostHrsSetpoint" Margin="2,0,2,0" Text="{Binding DefrostHrsSetpoint, StringFormat='D2'}" Foreground="#000" VerticalAlignment="Center" FontSize="9" FontWeight="DemiBold"/>
+                                        <TextBlock Text=":" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                        <TextBlock Name="defrostMinsSetpoint" Margin="2,0,2,0" Text="{Binding DefrostMinsSetpoint, StringFormat='D2'}" Foreground="#000" VerticalAlignment="Center" FontSize="9" FontWeight="DemiBold"/>
+                                    </StackPanel>
+                                    <!--6,3-->
+                                    <StackPanel Grid.Row="4" Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Name="defrostHrsFB" Margin="2,0,2,0" Text="{Binding DefrostHrs, StringFormat='D2'}" Foreground="#000" VerticalAlignment="Center" FontSize="9" FontWeight="DemiBold"/>
+                                        <TextBlock Text=":" Foreground="#000" Opacity="0.8" VerticalAlignment="Center" FontSize="6" FontWeight="SemiBold"/>
+                                        <TextBlock Name="defrostMinsFB" Margin="2,0,2,0" Text="{Binding DefrostMins, StringFormat='D2'}" Foreground="#000" VerticalAlignment="Center" FontSize="9" FontWeight="DemiBold"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Canvas>
+                    </Grid>
+                </Canvas>
+            </Border>
+        </Viewbox>
+    </Grid>
+</UserControl>
