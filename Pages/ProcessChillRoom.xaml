@@ -1,0 +1,60 @@
+﻿<Page x:Class="WPFSCADA.Pages.ProcessChillRoom"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WPFSCADA.Pages"
+      xmlns:controls="clr-namespace:WPFSCADA.Controls"
+      mc:Ignorable="d" 
+      d:DesignHeight="1050" d:DesignWidth="1800"
+      Title="ProcessChillRoom">
+    <Border BorderBrush="#FFCCCCCC" BorderThickness="0">
+        <Grid Background="{StaticResource PageBackgroundBrush}">
+            <Viewbox Stretch="Uniform">
+                <Canvas Width="1800" Height="1050">
+                    <StackPanel Orientation="Vertical">
+                        <Canvas Width="1800" Height="180" Background="White" Panel.ZIndex="0">
+                            <Path Stroke="DodgerBlue" StrokeThickness="8" Panel.ZIndex="4">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="0,50">
+                                            <LineSegment Point="1800,50" />
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+                            <Path Stroke="Orange" StrokeThickness="8">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="0,100">
+                                            <LineSegment Point="1800,100" />
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+                            <Canvas x:Name="PipeAnimationCanvas"
+                                    Width="1800"
+                                    Height="150"
+                                    Panel.ZIndex="10"
+                                    IsHitTestVisible="False"/>
+                        </Canvas>
+                        <Grid Background="White" Width="1800" Height="870" Panel.ZIndex="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="45*"/>
+                                <ColumnDefinition Width="45*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="1" BorderBrush="#666" BorderThickness="0" CornerRadius="5" >
+                                <controls:ProcessChillRoomControl x:Name="ProcessChillRoomUnitLeft" Margin="0,-60,0,0"/>
+                            </Border>
+                            <Border Grid.Column="2" BorderBrush="#666" BorderThickness="0" CornerRadius="5" >
+                                <controls:ProcessChillRoomControl x:Name="ProcessChillRoomUnitRight" Margin="0,-60,0,0"/>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Canvas>
+            </Viewbox>
+        </Grid>
+    </Border>
+</Page>

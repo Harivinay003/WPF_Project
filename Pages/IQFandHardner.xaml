@@ -1,0 +1,1104 @@
+﻿<Page x:Class="WPFSCADA.Pages.IQFandHardner"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WPFSCADA.Pages"
+      xmlns:controls="clr-namespace:WPFSCADA.Controls"
+      xmlns:root="clr-namespace:WPFSCADA"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      DataContext="{Binding RelativeSource={RelativeSource Self}}"
+      Title="IQFandHardner">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <!-- Reusable labeled toggle style (works with local:LabeledToggleButton) -->
+        <Style x:Key="ToggleStyle" TargetType="{x:Type root:LabeledToggleButton}">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderBrush" Value="#FFD0D7DE"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="root:LabeledToggleButton">
+                        <Border x:Name="Root" CornerRadius="0" Background="#fff" SnapsToDevicePixels="True"
+             BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid ClipToBounds="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- sliding thumb — use TranslateTransform for animation #1E73E8-->
+                                <Border x:Name="Thumb" CornerRadius="0" Grid.Column="0" Background="{StaticResource PrimaryGreenBrush}">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform x:Name="ThumbTransform" X="0" />
+                                    </Border.RenderTransform>
+                                </Border>
+                                <!-- labels bound to the control's properties -->
+                                <TextBlock Padding="2" x:Name="LeftLabel" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" FontWeight="DemiBold" Foreground="White" Text="{TemplateBinding OffText}"/>
+                                <TextBlock Padding="2" x:Name="RightLabel" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" FontWeight="DemiBold" Foreground="#333" Text="{TemplateBinding OnText}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#e7f6ff"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="LeftLabel" Property="Foreground" Value="#333"/>
+                                <Setter TargetName="RightLabel" Property="Foreground" Value="White"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="49" Duration="0:0:0.12" FillBehavior="HoldEnd" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.12" FillBehavior="HoldEnd" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+    <Border BorderBrush="#FFCCCCCC" BorderThickness="0">
+        <Grid Background="{StaticResource PageBackgroundBrush}">
+            <Viewbox Stretch="Uniform">
+                <Canvas Width="1800" Height="1050">
+                    <!--Vertical line-->
+                    <Path Stroke="Red" StrokeThickness="8" >
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="20,00">
+                                    <LineSegment Point="20,1050" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Path Stroke="DodgerBlue" StrokeThickness="8" Panel.ZIndex="4">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="70,0">
+                                    <LineSegment Point="70,1050" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Path Stroke="Orange" StrokeThickness="8">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="120,0">
+                                    <LineSegment Point="120,1050" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+
+                    <Canvas x:Name="VerticalPipeAnimationCanvas"
+        Width="1800"
+        Height="1050"
+        Panel.ZIndex="20"
+        IsHitTestVisible="False"/>
+                    <!--Top Horizontal lines-->
+                    <Path Stroke="Red" StrokeThickness="6" >
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="20,30">
+                                    <LineSegment Point="900,30" />
+                                    <LineSegment Point="900,110" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Image x:Name="topRedvalve1" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="-4" Canvas.Left="599" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Image x:Name="topRedrevValve1" Width="40" Panel.ZIndex="6"
+                           Canvas.Left="703" Canvas.Top="29"
+                           Source="/WPFSCADA;component/images/Valve2 copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <!-- TOP RED PMFL -->
+                    <Image x:Name="topRedpmflValve1"
+                           Width="34"
+                           Panel.ZIndex="6"
+                           Canvas.Top="-2"
+                           Canvas.Left="727"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Height="58">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source"
+                                        Value="/WPFSCADA;component/images/pmflValveRed.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TopRedValve}"
+                                                 Value="True">
+                                        <Setter Property="Source"
+                                                Value="/WPFSCADA;component/images/PMFL_Volve_Green.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="topRedvalve2" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="-4" Canvas.Left="789" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                    </Image>
+                    <Path Stroke="DodgerBlue" StrokeThickness="6" Panel.ZIndex="4">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="70,110">
+                                    <LineSegment Point="1050,110" />
+                                    <LineSegment Point="1050,370" />
+                                    <LineSegment Point="1120,370" />
+                                    <LineSegment Point="1120,514" />
+                                </PathFigure>
+                                <PathFigure StartPoint="1050,370">
+                                    <LineSegment Point="730,370" />
+                                    <LineSegment Point="730,514" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+
+                    <Image x:Name="topBluevalve1" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="72" Canvas.Left="600" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <!-- TOP BLUE PMFL -->
+                    <Image x:Name="topBluepmflValve1"
+                           Width="34"
+                           Panel.ZIndex="6"
+                           Canvas.Top="76"
+                           Canvas.Left="703"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Height="58">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source"
+                                        Value="/WPFSCADA;component/images/pmflValveRed.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TopBlueValve}"
+                                                 Value="True">
+                                        <Setter Property="Source"
+                                                Value="/WPFSCADA;component/images/PMFL_Volve_Green.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="topBluevalve2" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="72" Canvas.Left="770" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Path Name="mainPurplePath1"
+                          Stroke="MediumPurple"
+                          StrokeThickness="3"
+                          StrokeLineJoin="Round">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="665,110">
+                                    <LineSegment Point="665,205"/>
+                                    <QuadraticBezierSegment Point1="665,215"
+                                        Point2="675,215"/>
+                                    <LineSegment Point="900,215"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Image x:Name="topPurplevalve1" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="179" Canvas.Left="680" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Image x:Name="topPurplerevValve1" Width="40" Panel.ZIndex="6"
+                           Canvas.Left="780" Canvas.Top="215"
+                           Source="/WPFSCADA;component/images/Valve2 copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <!-- TOP PURPLE PMFL -->
+                    <Image x:Name="topPurplepmflValve1"
+                           Width="34"
+                           Panel.ZIndex="6"
+                           Canvas.Top="185"
+                           Canvas.Left="800"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Height="58">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source"
+                                        Value="/WPFSCADA;component/images/pmflValveRed.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TopPurpleValve}"
+                                                 Value="True">
+                                        <Setter Property="Source"
+                                                Value="/WPFSCADA;component/images/PMFL_Volve_Green.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="topPurplevalve2" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="179" Canvas.Left="850" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Path Name="mainPurplePath2"
+                          Stroke="MediumPurple"
+                          StrokeThickness="3"
+                          StrokeLineJoin="Round">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="665,150">
+                                    <LineSegment Point="890,150"/>
+                                    <QuadraticBezierSegment Point1="900,150"
+                                        Point2="900,160"/>
+                                    <LineSegment Point="900,300"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Path Stroke="Orange" StrokeThickness="6">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="120,300">
+                                    <LineSegment Point="950,300" />
+                                    <LineSegment Point="950,500" />
+                                    <!--Left conecction-->
+                                    <LineSegment Point="800,500" />
+                                    <LineSegment Point="800,615" />
+                                </PathFigure>
+                                <!--Right conecction-->
+                                <PathFigure StartPoint="950,500">
+                                    <LineSegment Point="1050,500"/>
+                                    <LineSegment Point="1050,615"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Image x:Name="toporangevalve1" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="265" Canvas.Left="600" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                    </Image>
+                    <Image x:Name="topOrangerevValve1" Width="40" Panel.ZIndex="6"
+                           Canvas.Left="700" Canvas.Top="300"
+                           Source="/WPFSCADA;component/images/Valve2 copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <!-- TOP ORANGE PMFL -->
+                    <Image x:Name="topOrangepmflValve1"
+                           Width="34"
+                           Panel.ZIndex="6"
+                           Canvas.Top="270"
+                           Canvas.Left="740"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Height="58">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source"
+                                        Value="/WPFSCADA;component/images/pmflValveRed.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TopOrangeValve}"
+                                                 Value="True">
+                                        <Setter Property="Source"
+                                                Value="/WPFSCADA;component/images/PMFL_Volve_Green.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="topOrangeValve1" Width="51" Panel.ZIndex="6"
+                           Canvas.Top="270" Canvas.Left="790"
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="50">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source" Value="/WPFSCADA;component/images/Valve_1.png" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Pmfl1Fb}" Value="True">
+                                        <Setter Property="Source" Value="/WPFSCADA;component/images/PMFL_Volve_Green.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="topOrangefgValve1" Width="41" Panel.ZIndex="6"
+                           Canvas.Left="850" Canvas.Top="265"
+                           Source="/WPFSCADA;component/images/fgfg_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Center" Height="40"/>
+
+                    <Image  Width="350" Source="/images/ColdStore_Box.png" Canvas.Left="400" Canvas.Top="490" />
+                    <!-- BLUE COIL -->
+                    <Path Name="topLeftBluePath"
+                          Stroke="DodgerBlue"
+                          StrokeThickness="6"
+                          StrokeLineJoin="Round"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Panel.ZIndex="5">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="730,515" IsClosed="False">
+                                    <LineSegment Point="420,515"/>
+                                    <QuadraticBezierSegment Point1="410,525"
+                                                            Point2="419,535"/>
+                                    <LineSegment Point="730,535"/>
+                                    <QuadraticBezierSegment Point1="740,545"
+                                                            Point2="731,555"/>
+                                    <LineSegment Point="420,555"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <!-- ORANGE COIL -->
+                    <Path Name="topLeftOrangePath"
+                          Stroke="Orange"
+                          StrokeThickness="6"
+                          StrokeLineJoin="Round"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Panel.ZIndex="5">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="420,555" IsClosed="False">
+                                    <QuadraticBezierSegment Point1="410,565"
+                                                            Point2="419,575"/>
+                                    <LineSegment Point="730,575"/>
+                                    <QuadraticBezierSegment Point1="740,585"
+                                                            Point2="731,595"/>
+                                    <LineSegment Point="420,595"/>
+                                    <QuadraticBezierSegment Point1="410,605"
+                                                            Point2="419,615"/>
+                                    <LineSegment Point="800,615"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Image  Width="350" Source="/images/ColdStore_Box.png" Canvas.Left="1100" Canvas.Top="490" />
+
+                    <Path Name="topRightBluePath"
+                          Stroke="DodgerBlue"
+                          StrokeThickness="6"
+                          StrokeLineJoin="Round"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Panel.ZIndex="5">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="1120,515" IsClosed="False">
+                                    <LineSegment Point="1430,515"/>
+                                    <QuadraticBezierSegment Point1="1440,525"
+                                                            Point2="1431,535"/>
+                                    <LineSegment Point="1120,535"/>
+                                    <QuadraticBezierSegment Point1="1110,545"
+                                                            Point2="1119,555"/>
+                                    <LineSegment Point="1430,555"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Path Name="topRightOrangePath"
+                          Stroke="Orange"
+                          StrokeThickness="6"
+                          StrokeLineJoin="Round"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Panel.ZIndex="5">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="1430,555" IsClosed="False">
+                                    <QuadraticBezierSegment Point1="1440,565"
+                                                            Point2="1431,575"/>
+                                    <LineSegment Point="1120,575"/>
+                                    <QuadraticBezierSegment Point1="1110,585"
+                                                            Point2="1119,595"/>
+                                    <LineSegment Point="1430,595"/>
+                                    <QuadraticBezierSegment Point1="1440,605"
+                                                            Point2="1431,615"/>
+                                    <LineSegment Point="1050,615"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Border Background="White"
+                            BorderBrush="#D9DEE5"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12,6"
+                            Width="276"
+                            Height="60" Canvas.Left="790" Canvas.Top="651" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10"
+                            ShadowDepth="2"
+                            Opacity="0.08"/>
+                        </Border.Effect>
+                        <TextBlock Text="IQF-1 180KW (-45)"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   FontSize="25" 
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TitleBrush}" Margin="19,0,0,0"/>
+                    </Border>
+                    <Border Background="White"
+                            BorderBrush="#D9DEE5"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12,6"
+                            Width="360"
+                            Height="60" Canvas.Left="748" Canvas.Top="779" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10"
+                                              ShadowDepth="2"
+                                              Opacity="0.08"/>
+                        </Border.Effect>
+                        <TextBlock Text="HARDENER-1 55 KW (-45)"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   FontSize="25" 
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TitleBrush}" Margin="19,0,0,0"/>
+                    </Border>
+
+                    <controls:StatusCard
+                        Width="150"
+                        Height="70"
+                        Title="EVP TEMP"
+                        Value="{Binding TopEvaporatorTemperature, StringFormat={}{0:N2}}"
+                        Unit="°C"
+                        Canvas.Left="1450" Canvas.Top="31" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <controls:StatusCard
+                        Width="150"
+                        Height="70"
+                        Title="AIR TEMP"
+                        Value="{Binding TopAirTemperature, StringFormat={}{0:N2}}"
+                        Unit="°C"
+                        Canvas.Left="1640" Canvas.Top="31" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                    <Border Style="{StaticResource DashboardCard}" Canvas.Top="113" Canvas.Left="1552"
+                     Width="160" Height="160"
+                     HorizontalAlignment="Center" VerticalAlignment="Top">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="13*"/>
+                                <RowDefinition Height="60*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Background="{StaticResource PrimaryBlueBrush}"
+                             CornerRadius="8,8,0,0">
+                                <TextBlock FontSize="15" FontWeight="SemiBold" Text="CONTROLS"
+                                    Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Grid Grid.Row="1">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center">
+                                        <root:LabeledToggleButton x:Name="AutoManualToggle" Margin="2" 
+                                       Canvas.Left="271" Canvas.Top="59" Style="{StaticResource ToggleStyle}" 
+                                       HorizontalAlignment="Center" VerticalAlignment="Top" 
+                                       Width="125"  Height="30"
+                                       IsChecked="False"
+                                      
+                                       OffText="AUTO" OnText="MANUAL">
+                                        </root:LabeledToggleButton>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
+                                        <Button x:Name="freezingButton" Margin="2"
+                                         Canvas.Left="271" Canvas.Top="91" Style="{StaticResource roundedButtonStyle}" 
+                                         HorizontalAlignment="Center" VerticalAlignment="Top"
+                                         Width="125"  Height="30"
+                                                FontSize="18"
+                                                Content="FREEZING">
+                                        </Button>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Orientation="Vertical" VerticalAlignment="Center">
+                                        <Button x:Name="defrostButton" Margin="2"
+                                         Canvas.Left="271" Canvas.Top="91" Style="{StaticResource roundedButtonStyle}" 
+                                         HorizontalAlignment="Center" VerticalAlignment="Top"
+                                         Width="125"  Height="30"
+                                                FontSize="18"
+                                                Content="DEFROSTING">
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    <Border Background="White"
+                            BorderBrush="#D9DEE5"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12,6"
+                            Width="232"
+                            Height="54" Canvas.Left="1516" Canvas.Top="280" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10"
+                                              ShadowDepth="2"
+                                              Opacity="0.08"/>
+                        </Border.Effect>
+                        <TextBlock Text="Deforst Time"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   FontSize="25"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TitleBrush}"/>
+                    </Border>
+
+                    <controls:StatusCard
+                        Width="150"
+                        Height="70"
+                        Title="SET POINT"
+                        Value="{Binding TopSetPoint, StringFormat={}{0:N2}}"
+                        Unit="min"
+                         IsEditable="True"
+                        EditClicked="TopSetPointEdit_Click"
+                        Canvas.Left="1450" Canvas.Top="340" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                    <controls:StatusCard
+                        Width="150"
+                        Height="70"
+                        Title="ELAPSED"
+                        Value="{Binding TopElapsed, StringFormat={}{0:N2}}"
+                        Unit="min"
+                        Canvas.Left="1640" Canvas.Top="340" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <!--Bottom Horizontal lines-->
+                    <Path Stroke="Red" StrokeThickness="6" >
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="20,700">
+                                    <LineSegment Point="400,700" />
+                                    <LineSegment Point="400,800" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+
+                    <Image x:Name="bottomRedvalve1" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="663" Canvas.Left="153" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Image x:Name="bottomRedrevValve1" Width="40" Panel.ZIndex="6"
+                           Canvas.Left="250" Canvas.Top="699"
+                           Source="/WPFSCADA;component/images/Valve2 copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <!-- BOTTOM RED PMFL -->
+                    <Image x:Name="bottomRedpmflValve1"
+                           Width="34"
+                           Panel.ZIndex="6"
+                           Canvas.Top="667"
+                           Canvas.Left="262"
+                           Height="58">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source"
+                                        Value="/WPFSCADA;component/images/pmflValveRed.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding BottomRedValve}"
+                                                 Value="True">
+                                        <Setter Property="Source"
+                                                Value="/WPFSCADA;component/images/PMFL_Volve_Green.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="bottomRedvalve2" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="663" Canvas.Left="316" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                    </Image>
+                    <Path Stroke="DodgerBlue" StrokeThickness="6" Panel.ZIndex="4">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="70,800">
+                                    <LineSegment Point="625,800" />
+                                    <LineSegment Point="625,875" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Image x:Name="bottomBluevalve1" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="764" Canvas.Left="137" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Image x:Name="bottomBluepmflValve1"
+                           Width="34"
+                           Panel.ZIndex="6"
+                           Canvas.Top="768"
+                           Canvas.Left="230"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           RenderTransformOrigin="0.5,0.5"
+                           Height="58">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source"
+                                        Value="/WPFSCADA;component/images/pmflValveRed.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding BottomBlueValve}"
+                                                 Value="True">
+                                        <Setter Property="Source"
+                                                Value="/WPFSCADA;component/images/PMFL_Volve_Green.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="bottomBluevalve2" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="764" Canvas.Left="300" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Path Name="mainBottomPurplePath1"
+                          Stroke="MediumPurple"
+                          StrokeThickness="3"
+                          StrokeLineJoin="Round">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="170,800">
+                                    <LineSegment Point="170,890"/>
+                                    <QuadraticBezierSegment Point1="170,900"
+                                        Point2="185,900"/>
+                                    <LineSegment Point="400,900"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Image x:Name="bottomPurplevalve1" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="862" Canvas.Left="181" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="40">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Image x:Name="bottomPurplerevValve1" Width="40" Panel.ZIndex="6"
+                           Canvas.Left="279" Canvas.Top="900"
+                           Source="/WPFSCADA;component/images/Valve2 copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Image x:Name="bottomPurplepmflValve1"
+                           Width="34"
+                           Panel.ZIndex="6"
+                           Canvas.Top="867"
+                           Canvas.Left="305"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           RenderTransformOrigin="0.5,0.5"
+                           Height="58">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source"
+                                        Value="/WPFSCADA;component/images/pmflValveRed.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding BottomPurpleValve}"
+                                                 Value="True">
+                                        <Setter Property="Source"
+                                                Value="/WPFSCADA;component/images/PMFL_Volve_Green.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="bottomPurplevalve2" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="862" Canvas.Left="344" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="39">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Path Name="mainBottomPurplePath2"
+                          Stroke="MediumPurple"
+                          StrokeThickness="3"
+                          StrokeLineJoin="Round">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="170,840">
+                                    <LineSegment Point="390,840"/>
+                                    <QuadraticBezierSegment Point1="400,840"
+                                        Point2="400,850"/>
+                                    <LineSegment Point="400,1015"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Path Stroke="Orange" StrokeThickness="6">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="120,1015">
+                                    <LineSegment Point="600,1015" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Image x:Name="bottomorangevalve1" Width="44" Panel.ZIndex="6"
+                           Canvas.Top="980" Canvas.Left="130" 
+                           Source="/WPFSCADA;component/images/Straight_Volve copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="39">
+                    </Image>
+                    <Image x:Name="bottomOrangerevValve1" Width="40" Panel.ZIndex="6"
+                           Canvas.Left="220" Canvas.Top="1015"
+                           Source="/WPFSCADA;component/images/Valve2 copy.png" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="-1"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <Image x:Name="bottomOrangepmflValve1"
+                           Width="34"
+                           Panel.ZIndex="6"
+                           Canvas.Top="983"
+                           Canvas.Left="240"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           RenderTransformOrigin="0.5,0.5"
+                           Height="58">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source"
+                                        Value="/WPFSCADA;component/images/pmflValveRed.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding BottomOrangeValve}"
+                                                 Value="True">
+                                        <Setter Property="Source"
+                                                Value="/WPFSCADA;component/images/PMFL_Volve_Green.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Image x:Name="bottomOrangeValve1" Width="51" Panel.ZIndex="6"
+                           Canvas.Top="985" Canvas.Left="295"
+                           HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="50">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source" Value="/WPFSCADA;component/images/Valve_1.png" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Pmfl1Fb}" Value="True">
+                                        <Setter Property="Source" Value="/WPFSCADA;component/images/PMFL_Volve_Green.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+
+                    <Image x:Name="bottomOrangefgValve1"
+                           Source="/WPFSCADA;component/images/fgfg_Volve copy.png" 
+                           Height="40"
+                           Width="41" 
+                           Canvas.Left="346"
+                           Canvas.Top="980"
+                           Panel.ZIndex="6"
+                           HorizontalAlignment="Left" 
+                           VerticalAlignment="Top"/>
+
+                    <Image  Width="478"
+                            Source="/images/ColdStore_Box.png"
+                            Height="214" 
+                            Canvas.Left="599"
+                            Canvas.Top="840"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
+
+                    <Path Name="bluePath"
+                          Stroke="DodgerBlue"
+                          StrokeThickness="6"
+                          StrokeLineJoin="Round"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Panel.ZIndex="5">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="625,875" IsClosed="False">
+                                    <LineSegment Point="1050,875"/>
+                                    <QuadraticBezierSegment Point1="1060,875"
+                                                            Point2="1055,895"/>
+                                    <LineSegment Point="625,895"/>
+                                    <QuadraticBezierSegment Point1="615,895"
+                                                            Point2="620,915"/>
+                                    <LineSegment Point="1050,915"/>
+                                    <QuadraticBezierSegment Point1="1060,915"
+                                                            Point2="1055,935"/>
+                                    <LineSegment Point="625,935"/>
+                                    <QuadraticBezierSegment Point1="615,935"
+                                                            Point2="620,955"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <Path Name="orangePath"
+                          Stroke="Orange"
+                          StrokeThickness="6"
+                          StrokeLineJoin="Round"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Panel.ZIndex="5">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="620,955" IsClosed="False">
+                                    <LineSegment Point="1050,955"/>
+                                    <QuadraticBezierSegment Point1="1060,955"
+                                                            Point2="1055,975"/>
+                                    <LineSegment Point="625,975"/>
+                                    <QuadraticBezierSegment Point1="615,975"
+                                                            Point2="620,995"/>
+                                    <LineSegment Point="1050,995"/>
+                                    <QuadraticBezierSegment Point1="1060,995"
+                                                            Point2="1055,1015"/>
+                                    <LineSegment Point="600,1015"/>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <controls:StatusCard
+                        Width="150"
+                        Height="70"
+                        Title="EVP TEMP"
+                       Value="{Binding BottomEvaporatorTemperature, StringFormat={}{0:N2}}"
+                        Unit="°C"
+                        Canvas.Left="1450" Canvas.Top="621" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                    <controls:StatusCard
+                        Width="150"
+                        Height="70"
+                        Title="AIR TEMP"
+                        Value="{Binding BottomAirTemperature, StringFormat={}{0:N2}}"
+                        Unit="°C"
+                        Canvas.Left="1640" Canvas.Top="621" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                    <Border Style="{StaticResource DashboardCard}" Canvas.Top="699" Canvas.Left="1552"
+                            Width="160" Height="160"
+                            HorizontalAlignment="Center" VerticalAlignment="Top">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="13*"/>
+                                <RowDefinition Height="60*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Background="{StaticResource PrimaryBlueBrush}"
+                              CornerRadius="8,8,0,0">
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Text="CONTROLS"
+                                     Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Grid Grid.Row="1">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center">
+                                        <root:LabeledToggleButton x:Name="AutoManualToggle2" Margin="2" 
+                                        Canvas.Left="271" Canvas.Top="59" Style="{StaticResource ToggleStyle}" 
+                                        HorizontalAlignment="Center" VerticalAlignment="Top" 
+                                        IsChecked="False"  Width="130"  Height="30"             
+                                        OffText="AUTO" OnText="MANUAL">
+                                        </root:LabeledToggleButton>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
+                                        <Button x:Name="freezingButton2" Margin="2"
+                                          Canvas.Left="271" Canvas.Top="91" Style="{StaticResource roundedButtonStyle}" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Top"
+                                          Width="125"  Height="30"
+                                                FontSize="18"
+                                          Content="FREEZING">
+                                        </Button>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Orientation="Vertical" VerticalAlignment="Center">
+                                        <Button x:Name="defrostButton2" Margin="2"
+                                                Canvas.Left="271" Canvas.Top="91" Style="{StaticResource roundedButtonStyle}" 
+                                                HorizontalAlignment="Center" VerticalAlignment="Top"
+                                                Width="125"  Height="30"
+                                                FontSize="18"
+                                                Content="DEFROSTING">
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    <Border Background="White"
+                            BorderBrush="#D9DEE5"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12,6"
+                            Width="232"
+                            Height="54" Canvas.Left="1516" Canvas.Top="870" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10"
+                                              ShadowDepth="2"
+                                              Opacity="0.08"/>
+                        </Border.Effect>
+                        <TextBlock Text="Deforst Time"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   FontSize="25"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TitleBrush}"/>
+                    </Border>
+
+                    <controls:StatusCard
+                        Width="150"
+                        Height="70"
+                        Title="SET POINT"
+                        Value="{Binding BottomSetPoint, StringFormat={}{0:N2}}"
+                        Unit="min"
+                         IsEditable="True"
+                        EditClicked="BottomSetPointEdit_Click"
+                        Canvas.Left="1450" Canvas.Top="930" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <controls:StatusCard
+                        Width="150"
+                        Height="70"
+                        Title="ELAPSED"
+                        Value="{Binding BottomElapsed, StringFormat={}{0:N2}}"
+                        Unit="min"
+                        Canvas.Left="1640" Canvas.Top="930" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                </Canvas>
+            </Viewbox>
+        </Grid>
+    </Border>
+</Page>

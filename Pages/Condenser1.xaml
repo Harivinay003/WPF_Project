@@ -1,0 +1,956 @@
+﻿<Page x:Class="WPFSCADA.Pages.Condenser1"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:controls="clr-namespace:WPFSCADA.Controls"
+      xmlns:helpers="clr-namespace:WPFSCADA.Helpers"
+      mc:Ignorable="d" 
+      d:DesignHeight="1050" d:DesignWidth="1800"
+      Background="#F5F8FC"
+      Title="Condenser1">
+    <Grid>
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="1800"
+                    Height="1000"
+                    Background="#F5F8FC">
+
+                <controls:StatusCard
+                    Title="DISCHARGE PRESSURE"
+                     helpers:TagProperties.ConfigKey="HighDischargePressure"
+                    Width="320"
+                    Height="85"
+                    Foreground="Green"
+                    Value="{Binding DischargePressure, StringFormat={}{0:N2}}"
+                    Unit="bar"
+                    Canvas.Left="20"
+                    Canvas.Top="20"/>
+
+                <controls:StatusCard
+                    Title="LOADING SET POINT"
+                    helpers:TagProperties.ConfigKey="LoadingSetPoint"
+                    Width="320"
+                    Height="85"
+                    Value="{Binding LoadingSetPoint, StringFormat={}{0:N2}}"
+                    Foreground="DarkBlue"
+                    Unit="bar"
+                    IsEditable="True"
+                    EditClicked="LoadingSetPointEdit_Click"
+                    Canvas.Left="380"
+                    Canvas.Top="20"/>
+
+                <controls:StatusCard
+                    Title="UNLOADING SET POINT"
+                    helpers:TagProperties.ConfigKey="UnloadingSetPoint"
+                    Width="320"
+                    Height="85"
+                    Value="{Binding UnloadingSetPoint, StringFormat={}{0:N2}}"
+                    Foreground="DarkBlue"
+                    Unit="bar"
+                    IsEditable="True"
+                    EditClicked="UnLoadingSetPointEdit_Click"
+                    Canvas.Left="740"
+                    Canvas.Top="20"/>
+
+                <controls:StatusCard
+                 helpers:TagProperties.ConfigKey="AlarmSetPoint" 
+                    Title="ALARM SET POINT"
+                    Width="320"
+                    Height="85"
+                    Value="{Binding AlarmSetPoint, StringFormat={}{0:N2}}"
+                    Unit="bar"
+                    IsEditable="True"
+                    EditClicked="AlarmSetPointEdit_Click"
+                    Canvas.Left="1100"
+                    Canvas.Top="20"/>
+                <controls:StatusCard
+                    helpers:TagProperties.ConfigKey="SafetySetPoint"
+                    Title="SAFETY SET POINT"
+                    Width="320"
+                    Height="85"
+                    Value="{Binding SafetySetPoint, StringFormat={}{0:N2}}"
+                    Unit="bar"
+                    IsEditable="True"
+                    EditClicked="SafetySetPointEdit_Click"
+                    Canvas.Left="1460"
+                    Canvas.Top="20"/>
+           
+
+                <Path Stroke="#EF2020"
+                      StrokeThickness="7"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Canvas.Left="0"
+                      Canvas.Top="160"
+                      Panel.ZIndex="5">
+
+                    <Path.Data>
+                        <LineGeometry
+                            StartPoint="0,0"
+                            EndPoint="1800,0"/>
+                    </Path.Data>
+                </Path>
+          
+                <Border Background="White"
+                        BorderBrush="#D9DEE5"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="12,6"
+                        Width="276"
+                        Height="60"  
+                        Canvas.Left="145"
+                        Canvas.Top="205" 
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10"
+                                          ShadowDepth="2"
+                                          Opacity="0.08"/>
+                    </Border.Effect>
+                    <TextBlock Text="EVAP. COND - 1"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"
+                               FontSize="25" 
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TitleBrush}"
+                               Margin="19,0,0,0"/>
+                </Border>
+                
+           
+                <Border Background="White"
+                        BorderBrush="#D9DEE5"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="12,6"
+                        Width="276"
+                        Height="60" 
+                        Canvas.Left="765"
+                        Canvas.Top="205"
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10"
+                                          ShadowDepth="2"
+                                          Opacity="0.08"/>
+                    </Border.Effect>
+                    <TextBlock Text="EVAP. COND - 2"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"
+                               FontSize="25" 
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TitleBrush}"
+                               Margin="19,0,0,0"/>
+                </Border>
+                              
+                <Border Background="White"
+                        BorderBrush="#D9DEE5"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="12,6"
+                        Width="276"
+                        Height="60"  Canvas.Left="1385"
+                        Canvas.Top="205" HorizontalAlignment="Left"
+                        VerticalAlignment="Top">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10"
+                                          ShadowDepth="2"
+                                          Opacity="0.08"/>
+                    </Border.Effect>
+                    <TextBlock Text="EVAP. COND - 3"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"
+                               FontSize="25" 
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TitleBrush}"
+                               Margin="19,0,0,0"/>
+                </Border>
+                <!-- C1 REMOTE / LOCAL INDICATOR -->
+                <Border x:Name="C1ModeIndicator"
+                        Canvas.Left="45"
+                        Canvas.Top="290"
+                        Width="60"
+                        Height="28"
+                        CornerRadius="5"
+                        Panel.ZIndex="20">
+
+                    <TextBlock x:Name="C1ModeText"
+                               Text="-"
+                               Foreground="Black"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                <Border x:Name="C1OperatingModeIndicator"
+                        Canvas.Left="450"
+                        Canvas.Top="290"
+                        Width="60"
+                        Height="28"
+                        CornerRadius="5"
+                        Panel.ZIndex="20">
+
+                    <TextBlock x:Name="C1OperatingModeText"
+                               Text="-"
+                               Foreground="Black"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                <Image x:Name="Condenser1Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_WithoutWater.png"
+                       Width="420"
+                       Height="311"
+                       Stretch="Fill"
+                       Canvas.Left="70"
+                       Canvas.Top="350"
+                       Panel.ZIndex="5"
+                       MouseLeftButtonDown="Condenser1_MouseLeftButtonDown"/>
+
+                <Image x:Name="Fan1Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_Fan_Red.png"
+                       Width="165"
+                       Height="93"
+                       Stretch="Uniform"
+                       Canvas.Left="95"
+                       Canvas.Top="290"
+                       Panel.ZIndex="6" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Image x:Name="C1Fan1Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_Fan_Red.png"
+                       Width="165"
+                       Height="93"
+                       Stretch="Uniform"
+                       Canvas.Left="295"
+                       Canvas.Top="290"
+                       Panel.ZIndex="6" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Image  x:Name="C1PumpImage"
+                    Source="/WPFSCADA;component/Assets/Condenser_Pump_Red.png"
+                       Height="64"
+                       Width="70"
+                       Canvas.Left="73"
+                       Canvas.Top="599" HorizontalAlignment="Center" VerticalAlignment="Top">
+
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="-1"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+
+                <TextBlock
+                    Canvas.Left="100"
+                    Canvas.Top="725"
+                    Text="ROLE"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Foreground="#374151"/>
+
+                <Border
+                    Canvas.Left="150"
+                    Canvas.Top="720"
+                    Width="190"
+                    Height="34"
+                    Background="#E8F0FE"
+                    CornerRadius="6"
+                    Padding="2">
+                    <StackPanel Orientation="Horizontal">
+
+                        <Button
+                            x:Name="C1MasterButton"
+                            helpers:TagProperties.ConfigKey="C1MasterSelection"
+                            Content="MASTER"
+                            Width="60"
+                            Height="24"
+                            Padding="0"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Background="Transparent"
+                            Foreground="#4B5563"
+                            BorderThickness="0"
+                            Click="C1MasterButton_Click"/>
+
+                        <TextBlock
+                            x:Name="C1Slave1Text"
+                            Text="SLAVE 1"
+                            helpers:TagProperties.ConfigKey="C1Slave1"
+                            Width="58"
+                            Height="24"
+                            TextAlignment="Center"
+                            VerticalAlignment="Center"
+                            Padding="0,5,0,0"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Foreground="#64748B"
+                            Background="#E8EEF7"/>
+
+                        <TextBlock
+                            x:Name="C1Slave2Text"
+                            Text="SLAVE 2"
+                            helpers:TagProperties.ConfigKey="C1Slave2"
+                            Width="58"
+                            Height="24"
+                            TextAlignment="Center"
+                            VerticalAlignment="Center"
+                            Padding="0,5,0,0"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Foreground="#64748B"
+                            Background="#E8EEF7"/>
+
+                    </StackPanel>
+                </Border>
+
+                <Path Stroke="#4338FF"
+                      StrokeThickness="7"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="55,602">
+                                <LineSegment Point="55,400"/>
+                                <LineSegment Point="90,400"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+                <!-- C2 REMOTE / LOCAL INDICATOR -->
+                <Border x:Name="C2ModeIndicator"
+                        Canvas.Left="675"
+                        Canvas.Top="290"
+                        Width="60"
+                        Height="28"
+                        CornerRadius="5"
+                        Panel.ZIndex="20">
+
+                    <TextBlock x:Name="C2ModeText"
+                               Text="-"
+                               Foreground="black"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                
+                <Border x:Name="C2OperatingModeIndicator"
+                        Canvas.Left="1070"
+                        Canvas.Top="290"
+                        Width="60"
+                        Height="28"
+                        CornerRadius="5"
+                        Panel.ZIndex="20">
+
+                    <TextBlock x:Name="C2OperatingModeText"
+                               Text="-"
+                               Foreground="Black"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                <Image x:Name="Condenser2Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_WithoutWater.png"
+                       Width="420"
+                       Height="311"
+                       Stretch="Fill"
+                       Canvas.Left="680"
+                       Canvas.Top="350"
+                       MouseLeftButtonDown="Condenser2_MouseLeftButtonDown"
+                       Panel.ZIndex="5"/>
+
+                <Image x:Name="Condenser2Fan1Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_Fan_Red.png"
+                       Width="165"
+                       Height="93"
+                       Stretch="Uniform"
+                       Canvas.Left="715"
+                       Canvas.Top="290"
+                       Panel.ZIndex="6" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Image x:Name="C2Fan2Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_Fan_Red.png"
+                       Width="165"
+                       Height="93"
+                       Stretch="Uniform"
+                       Canvas.Left="905"
+                       Canvas.Top="290"
+                       Panel.ZIndex="6" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Image x:Name="C2PumpImage"
+                       Source="/WPFSCADA;component/Assets/Condenser_Pump_Red.png"
+                       Height="64"
+                       Width="70"
+                       Canvas.Left="682"
+                       Panel.ZIndex="15"
+                       Canvas.Top="599" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Top">
+
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="-1"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+
+                <TextBlock
+                    Canvas.Left="650"
+                    Canvas.Top="725"
+                    Text="ROLE"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Foreground="#374151"/>
+
+                <Border
+                    Canvas.Left="700"
+                    Canvas.Top="720"
+                    Width="190"
+                    Height="34"
+                    Background="#E8F0FE"
+                    CornerRadius="6"
+                    Padding="2">
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <Button
+                            x:Name="C2MasterButton"
+                            helpers:TagProperties.ConfigKey="C2MasterSelection"
+                            Content="MASTER"
+                            Width="60"
+                            Height="24"
+                            Padding="0"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Background="Transparent"
+                            Foreground="#4B5563"
+                            BorderThickness="0"
+                            Click="C2MasterButton_Click"/>
+
+                        <TextBlock
+                            x:Name="C2Slave1Text"
+                            Text="SLAVE 1"
+                            helpers:TagProperties.ConfigKey="C2Slave1"
+                            Width="58"
+                            Height="24"
+                            TextAlignment="Center"
+                            VerticalAlignment="Center"
+                            Padding="0,5,0,0"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Foreground="#64748B"
+                            Background="#E8EEF7"/>
+
+                        <TextBlock
+                            x:Name="C2Slave2Text"
+                            Text="SLAVE 2"
+                            helpers:TagProperties.ConfigKey="C2Slave2"
+                            Width="58"
+                            Height="24"
+                            TextAlignment="Center"
+                            VerticalAlignment="Center"
+                            Padding="0,5,0,0"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Foreground="#64748B"
+                            Background="#E8EEF7"/>
+                    </StackPanel>
+                </Border>
+
+                <Path Stroke="#4338FF"
+                      StrokeThickness="7"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="662,602">
+                                <LineSegment Point="662,400"/>
+                                <LineSegment Point="690,400"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+
+                </Path>
+                <!-- C3 REMOTE / LOCAL INDICATOR -->
+                <Border x:Name="C3ModeIndicator"
+                        Canvas.Left="1250"
+                        Canvas.Top="290"
+                        Width="60"
+                        Height="28"
+                        CornerRadius="5"
+                        Panel.ZIndex="20">
+
+                    <TextBlock x:Name="C3ModeText"
+                               Text="-"
+                               Foreground="black"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                
+                <Border x:Name="C3OperatingModeIndicator"
+                        Canvas.Left="1640"
+                        Canvas.Top="290"
+                        Width="60"
+                        Height="28"
+                        CornerRadius="5"
+                        Panel.ZIndex="20">
+
+                    <TextBlock x:Name="C3OperatingModeText"
+                               Text="-"
+                               Foreground="Black"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                <Image x:Name="Condenser3Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_WithoutWater.png"
+                       Width="420"
+                       Height="311"
+                       Stretch="Fill"
+                       Canvas.Left="1270"
+                       Canvas.Top="350"
+                       MouseLeftButtonDown="Condenser3_MouseLeftButtonDown"
+                       Panel.ZIndex="5"/>
+
+                <Image x:Name="Condenser3Fan1Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_Fan_Red.png"
+                       Width="165"
+                       Height="93"
+                       Stretch="Uniform"
+                       Canvas.Left="1295"
+                       Canvas.Top="290"
+                       Panel.ZIndex="6" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Image x:Name="C3Fan2Image"
+                       Source="/WPFSCADA;component/Assets/Condenser_Fan_Red.png"
+                       Width="165"
+                       Height="93"
+                       Stretch="Uniform"
+                       Canvas.Left="1495"
+                       Canvas.Top="290"
+                       Panel.ZIndex="6" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Image x:Name="C3PumpImage"
+                       Source="/WPFSCADA;component/Assets/Condenser_Pump_Red.png"
+                       Height="64"
+                       Width="70"
+                       Panel.ZIndex="15"
+                       Canvas.Left="1272"
+                       Canvas.Top="599" HorizontalAlignment="Center"
+                       VerticalAlignment="Top">
+
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="-1"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+
+                <TextBlock
+                    Canvas.Left="1250"
+                    Canvas.Top="725"
+                    Text="ROLE"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Foreground="#374151"/>
+                
+                <Border
+                    Canvas.Left="1300"
+                    Canvas.Top="720"
+                    Width="190"
+                    Height="34"
+                    Background="#E8F0FE"
+                    CornerRadius="6"
+                    Padding="2">
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <Button
+                            x:Name="C3MasterButton"
+                            helpers:TagProperties.ConfigKey="C3MasterSelection"
+                            Content="MASTER"
+                            Width="60"
+                            Height="24"
+                            Padding="0"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Background="Transparent"
+                            Foreground="#4B5563"
+                            BorderThickness="0"
+                            Click="C3MasterButton_Click"/>
+
+                        <TextBlock
+                            x:Name="C3Slave1Text"
+                            Text="SLAVE 1"
+                            helpers:TagProperties.ConfigKey="C3Slave1"
+                            Width="58"
+                            Height="24"
+                            TextAlignment="Center"
+                            VerticalAlignment="Center"
+                            Padding="0,5,0,0"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Foreground="#64748B"
+                            Background="#E8EEF7"/>
+
+                        <TextBlock
+                            x:Name="C3Slave2Text"
+                            Text="SLAVE 2"
+                            helpers:TagProperties.ConfigKey="C3Slave2"
+                            Width="58"
+                            Height="24"
+                            TextAlignment="Center"
+                            VerticalAlignment="Center"
+                            Padding="0,5,0,0"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Foreground="#64748B"
+                            Background="#E8EEF7"/>
+
+                    </StackPanel>
+                </Border>
+
+                <Path Stroke="#4338FF"
+                      StrokeThickness="7"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="1252,602">
+                                <LineSegment Point="1252,400"/>
+                                <LineSegment Point="1290,400"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <Path Stroke="#EF2020"
+                      StrokeThickness="6"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="620,160">
+                                <LineSegment Point="620,443"/>
+                                <LineSegment Point="460,443"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <Image Source="/WPFSCADA;component/Assets/Dsv1.png"
+                       Height="68"
+                       Width="90"
+                       Panel.ZIndex="10"
+                       Canvas.Left="492"
+                       Canvas.Top="384"
+                       HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                <Image Source="/WPFSCADA;component/Assets/Svas125.png"
+                       Height="87"
+                       Width="62"
+                       Canvas.Left="593"
+                       Panel.ZIndex="10"
+                       HorizontalAlignment="Left" VerticalAlignment="Top"
+                       Canvas.Top="505">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleY="-1"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+
+                <Path Stroke="#EF2020"
+                      StrokeThickness="6"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="1220,160">
+                                <LineSegment Point="1220,443"/>
+                                <LineSegment Point="1070,443"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+                <Image Source="/WPFSCADA;component/Assets/Dsv1.png"
+                       Height="68"
+                       Width="90"
+                       Panel.ZIndex="10"
+                       Canvas.Left="1100"
+                       Canvas.Top="384"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"/>
+
+                <Image Source="/WPFSCADA;component/Assets/Svas125.png"
+                       Height="87"
+                       Width="62"
+                       Canvas.Left="1193"
+                       Panel.ZIndex="10"
+                       HorizontalAlignment="Left" 
+                       VerticalAlignment="Top"
+                       Canvas.Top="505">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleY="-1"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+
+                <Path Stroke="#EF2020"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10"
+                      StrokeThickness="6">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="1780,160">
+                                <LineSegment Point="1780,443"/>
+                                <LineSegment Point="1660,443"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <Image Source="/WPFSCADA;component/Assets/Dsv1.png"
+                       Height="68"
+                       Width="90"
+                       Panel.ZIndex="10"
+                       Canvas.Left="1670"
+                       Canvas.Top="384"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"/>
+
+                <Image Source="/WPFSCADA;component/Assets/Svas125.png"
+                       Height="87"
+                       Width="62"
+                       Canvas.Left="1755"
+                       Panel.ZIndex="10"
+                       HorizontalAlignment="Left" 
+                       VerticalAlignment="Top"
+                       Canvas.Top="505">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleY="-1"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+
+                <Path Stroke="#FFEA00"
+                      StrokeThickness="7"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round">
+                    <Path.Data>
+                        <LineGeometry StartPoint="0,900"
+                                      EndPoint="1800,900"/>
+                    </Path.Data>
+                </Path>
+
+                <Path Stroke="#4338FF"
+                      StrokeThickness="7"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round">
+                    <Path.Data>
+                        <LineGeometry StartPoint="0,800"
+                                      EndPoint="1800,800"/>
+                    </Path.Data>
+                </Path>
+
+                <Path Stroke="#FFEA00"
+                      StrokeThickness="6"
+                      StrokeStartLineCap="Round"                   
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="570,900">
+                                <LineSegment Point="570,520"/>
+                                <LineSegment Point="460,520"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <Image Source="/WPFSCADA;component/Assets/Svas125.png"
+                       Height="60"
+                       Panel.ZIndex="10"
+                       Width="50"
+                       Canvas.Left="545"
+                       Canvas.Top="475"/>
+
+                <Path Stroke="#4338FF"
+                      StrokeThickness="6"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="530,800">
+                                <LineSegment Point="530,590"/>
+                                <LineSegment Point="470,590"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <controls:StatusCard
+                    helpers:TagProperties.ConfigKey="C1FlowMeter"
+                    Width="156"
+                    Height="77"
+                    Title="FLOW METER"
+                    Value="{Binding C1FlowMeter, StringFormat={}{0:N2}}"
+                    Unit="Ltrs"
+                    Canvas.Left="354"
+                    Canvas.Top="700" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Path Stroke="#FFEA00"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10"
+                      StrokeThickness="5">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="1180,900">
+                                <LineSegment Point="1180,520"/>
+                                <LineSegment Point="1070,520"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <Image Source="/WPFSCADA;component/Assets/Svas125.png"
+                       Height="60"
+                       Panel.ZIndex="10"
+                       Width="50"
+                       Canvas.Left="1155"
+                       Canvas.Top="475"/>
+
+                <Path Stroke="#4338FF"
+                      StrokeThickness="6"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="1140,800">
+                                <LineSegment Point="1140,590"/>
+                                <LineSegment Point="1080,590"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <controls:StatusCard
+                    helpers:TagProperties.ConfigKey="C2FlowMeter"
+                    Width="156"
+                    Height="77"
+                    Title="FLOW METER"
+                    Value="{Binding C2FlowMeter, StringFormat={}{0:N2}}"
+                    Unit="Ltrs"
+                    Panel.ZIndex="10"
+                    Canvas.Left="943"
+                    Canvas.Top="700" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Path Stroke="#FFEA00"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10"
+                      StrokeThickness="5">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="1750,900">
+                                <LineSegment Point="1750,520"/>
+                                <LineSegment Point="1660,520"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <Image Source="/WPFSCADA;component/Assets/Svas125.png"
+                       Height="60"
+                       Panel.ZIndex="10"
+                       Width="50"
+                       Canvas.Left="1725"
+                       Canvas.Top="475"/>
+
+                <Path Stroke="#4338FF"
+                      StrokeThickness="6"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Panel.ZIndex="10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="1730,800">
+                                <LineSegment Point="1730,590"/>
+                                <LineSegment Point="1670,590"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <controls:StatusCard
+                    helpers:TagProperties.ConfigKey="C3FlowMeter"
+                    Width="156"
+                    Height="77"
+                    Title="FLOW METER"
+                    Value="{Binding C3FlowMeter, StringFormat={}{0:N2}}"
+                    Unit="Ltrs"
+                    Canvas.Left="1536"
+                    Canvas.Top="700" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <Button
+                    x:Name="ConfigurationButton"
+                    Content="Configuration Mode"
+                    Width="160"
+                    Height="40"
+                    Canvas.Left="1612"
+                    Click="ConfigurationButton_Click" 
+                    Canvas.Top="110"/>
+
+                <Canvas x:Name="PipeAnimationCanvas"
+                        Width="1800"
+                        Height="1000"
+                        Panel.ZIndex="50"
+                        IsHitTestVisible="False"/>
+            </Canvas>
+        </Viewbox>
+    </Grid>
+</Page>
