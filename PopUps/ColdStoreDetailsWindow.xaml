@@ -1,0 +1,1887 @@
+﻿<Window x:Class="WPFSCADA.PopUps.ColdStoreDetailsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WPFSCADA.Controls"
+        xmlns:root="clr-namespace:WPFSCADA"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Width="450"
+        Height="750"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <Style x:Key="ToggleStyle"
+               TargetType="{x:Type root:LabeledToggleButton}">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderBrush" Value="#FFD0D7DE"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="root:LabeledToggleButton">
+                        <Border x:Name="Root"
+                                CornerRadius="0"
+                                Background="#FFFFFF"
+                                SnapsToDevicePixels="True"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid ClipToBounds="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Sliding thumb -->
+                                <Border x:Name="Thumb"
+                                        CornerRadius="0"
+                                        Grid.Column="0"
+                                        Background="{StaticResource PrimaryGreenBrush}">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform
+                                            x:Name="ThumbTransform"
+                                            X="0"/>
+                                    </Border.RenderTransform>
+                                </Border>
+                                <!-- LEFT -->
+                                <TextBlock x:Name="LeftLabel"
+                                           Grid.Column="0"
+                                           Padding="2"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="10"
+                                           FontWeight="DemiBold"
+                                           Foreground="White"
+                                           Text="{TemplateBinding OffText}"/>
+                                <!-- RIGHT -->
+                                <TextBlock x:Name="RightLabel"
+                                           Grid.Column="1"
+                                           Padding="2"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="10"
+                                           FontWeight="DemiBold"
+                                           Foreground="#333"
+                                           Text="{TemplateBinding OnText}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Root"
+                                        Property="Background"
+                                        Value="#E7F6FF"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked"
+                                     Value="True">
+                                <Setter TargetName="LeftLabel"
+                                        Property="Foreground"
+                                        Value="#333"/>
+                                <Setter TargetName="RightLabel"
+                                        Property="Foreground"
+                                        Value="White"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ThumbTransform"
+                                                Storyboard.TargetProperty="X"
+                                                To="49"
+                                                Duration="0:0:0.12"
+                                                FillBehavior="HoldEnd"/>
+
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ThumbTransform"
+                                                Storyboard.TargetProperty="X"
+                                                To="0"
+                                                Duration="0:0:0.12"
+                                                FillBehavior="HoldEnd"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="Root"
+                                        Property="Opacity"
+                                        Value="0.45"/>
+                                <Setter TargetName="Root"
+                                        Property="Background"
+                                        Value="#E5E7EB"/>
+                                <Setter TargetName="LeftLabel"
+                                        Property="Foreground"
+                                        Value="#9CA3AF"/>
+                                <Setter TargetName="RightLabel"
+                                        Property="Foreground"
+                                        Value="#9CA3AF"/>
+                                <Setter TargetName="Thumb"
+                                        Property="Background"
+                                        Value="#BDBDBD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- TAB TEXT -->
+        <Style x:Key="TabTextStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="11"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Foreground"
+                    Value="#4B5563"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Center"/>
+            <Setter Property="VerticalAlignment"
+                    Value="Center"/>
+        </Style>
+        <!-- STATUS BOX -->
+        <Style x:Key="StatusBoxStyle"
+               TargetType="Border">
+            <Setter Property="Width"
+                    Value="115"/>
+            <Setter Property="Height"
+                    Value="25"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Left"/>
+            <Setter Property="CornerRadius"
+                    Value="5"/>
+            <Setter Property="Background"
+                    Value="#E8F1FF"/>
+        </Style>
+        <!-- DEFROST BUTTON -->
+        <Style x:Key="DefrostButtonStyle"
+               TargetType="Button">
+            <Setter Property="Width"
+                    Value="145"/>
+            <Setter Property="Height"
+                    Value="32"/>
+            <Setter Property="Background"
+                    Value="{StaticResource PrimaryBlueBrush}"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="FontSize"
+                    Value="11"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="5">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="#155FBE"/>
+                </Trigger>
+                <Trigger Property="IsEnabled"
+                         Value="False">
+                    <Setter Property="Opacity"
+                            Value="0.45"/>
+                    <Setter Property="Cursor"
+                            Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <!-- MODE BUTTON -->
+        <Style x:Key="ModeButtonStyle"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="#4B5563"/>
+            <Setter Property="FontSize"
+                    Value="10"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled"
+                         Value="False">
+                    <Setter Property="Opacity"
+                            Value="0.45"/>
+                    <Setter Property="Cursor"
+                            Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <!-- VALVE BUTTON -->
+        <Style x:Key="ValveButtonStyle"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="#4B5563"/>
+            <Setter Property="FontSize"
+                    Value="10"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled"
+                         Value="False">
+                    <Setter Property="Opacity"
+                            Value="0.45"/>
+                    <Setter Property="Cursor"
+                            Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <!-- SECTION HEADER -->
+        <Style x:Key="SectionHeaderStyle"
+       TargetType="Border">
+            <Setter Property="Background"
+            Value="#374151"/>
+            <Setter Property="Height"
+            Value="32"/>
+            <Setter Property="CornerRadius"
+            Value="5,5,0,0"/>
+            <Setter Property="Margin"
+            Value="0"/>
+        </Style>
+
+        <Style x:Key="SectionHeaderTextStyle"
+       TargetType="TextBlock">
+            <Setter Property="Foreground"
+            Value="White"/>
+            <Setter Property="FontSize"
+            Value="12"/>
+            <Setter Property="FontWeight"
+            Value="Bold"/>
+            <Setter Property="HorizontalAlignment"
+            Value="Center"/>
+            <Setter Property="VerticalAlignment"
+            Value="Center"/>
+        </Style>
+        <Style x:Key="CycleTimeButtonStyle"
+               TargetType="Button">
+            <Setter Property="Width"
+                    Value="105"/>
+            <Setter Property="Height"
+            Value="29"/>
+            <Setter Property="FontSize"
+            Value="14"/>
+            <Setter Property="FontWeight"
+            Value="Bold"/>
+            <Setter Property="Foreground"
+            Value="#2563EB"/>
+            <Setter Property="Background"
+            Value="#E8F1FF"/>
+            <Setter Property="BorderThickness"
+            Value="0"/>
+            <Setter Property="Cursor"
+            Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="5">
+                            <ContentPresenter
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled"
+                             Value="False">
+                                <Setter TargetName="ButtonBorder"
+                                Property="Background"
+                                Value="#E5E7EB"/>
+                                <Setter Property="Foreground"
+                                Value="#9CA3AF"/>
+                                <Setter Property="Opacity"
+                                Value="0.65"/>
+                                <Setter Property="Cursor"
+                                Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <!-- MAIN WINDOW -->
+    <Border Margin="8"
+        Background="#F5F7FA"
+        CornerRadius="10"
+        BorderBrush="#D9E0E7"
+        BorderThickness="1">
+
+        <Border.Effect>
+            <DropShadowEffect
+            BlurRadius="18"
+            ShadowDepth="4"
+            Opacity="0.22"/>
+        </Border.Effect>
+
+        <Grid>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="42"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0"
+                Background="#374151"
+                CornerRadius="10,10,0,0">
+                <Grid>
+                    <TextBlock x:Name="UnitNameText"
+                           Text="COLD STORE"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                           Margin="20,0,0,0"/>
+                    <!-- CLOSE BUTTON -->
+                    <Button Width="35"
+                        Height="35"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Margin="0,0,10,0"
+                        Content="✕"
+                        FontSize="20"
+                        Foreground="White"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="CloseButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background"
+                                    Value="Transparent"/>
+                                <Setter Property="Foreground"
+                                    Value="White"/>
+                                <Setter Property="BorderThickness"
+                                    Value="0"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                        <Setter Property="Background"
+                                            Value="#155FBE"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1"
+                Background="White"
+                BorderBrush="#DDE3EA"
+                BorderThickness="0,0,0,1">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1"/>
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            x:Name="ControlsTabButton"
+                            Background="Transparent"
+                            Foreground="#4B5563"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="SemiBold"
+                            Click="ControlsTabButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}">
+                                    <TextBlock Text="CONTROLS"
+                                               FontSize="13"
+                                               FontWeight="Bold"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Rectangle Grid.Column="1"
+                               Width="1"
+                               Fill="#D5D9DE"/>
+                    <Button Grid.Column="2"
+                            x:Name="CyclesTabButton"
+                            Background="Transparent"
+                            Foreground="#4B5563"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="SemiBold"
+                            Click="CyclesTabButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}">
+                                    <TextBlock Text="CYCLES"
+                                               FontSize="13"
+                                               FontWeight="Bold"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Rectangle Grid.Column="3"
+                               Width="1"
+                               Fill="#D5D9DE"/>
+
+                    <Button Grid.Column="4"
+                            x:Name="EventsTabButton"
+                            Background="Transparent"
+                            Foreground="#4B5563"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="SemiBold"
+                            Click="EventsTabButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}">
+                                    <TextBlock Text="EVENTS &amp; ALARMS"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Rectangle Grid.Column="5"
+                               Width="1"
+                               Fill="#D5D9DE"/>
+
+                    <Button Grid.Column="6"
+                            x:Name="MaintenanceTabButton"
+                            Background="Transparent"
+                            Foreground="#4B5563"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="SemiBold"
+                            Click="MaintenanceTabButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}">
+                                    <TextBlock Text="MAINTENANCE"
+                                               FontSize="13"
+                                               FontWeight="Bold"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+            </Border>
+            <Border Grid.Row="2"
+                Background="#F5F7FA"
+                CornerRadius="0,0,10,10">
+
+                <Grid>
+                    <!--  CONTROLS -->
+                    <Grid x:Name="ControlsContent"
+                      Visibility="Visible">
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+
+                            <StackPanel Width="380"
+                                    Margin="14,12,14,14">
+                                <!-- MODE & CONTROL -->
+                                <Border Background="White"
+                                    BorderBrush="#DDE3EA"
+                                    BorderThickness="1"
+                                    CornerRadius="7"
+                                    Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <!-- HEADER -->
+                                        <Border Style="{StaticResource SectionHeaderStyle}">
+
+                                            <TextBlock Text="STATUS &amp; CONTROL"
+                                                       FontSize="16"
+                                                   Style="{StaticResource SectionHeaderTextStyle}"/>
+
+                                        </Border>
+                                        <Grid Margin="15,8,15,8">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="40"/>
+                                                <RowDefinition Height="40"/>
+                                                <RowDefinition Height="40"/>
+                                            </Grid.RowDefinitions>
+                                            <!-- CONTROL MODE -->
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                       Text="Control Mode"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border Grid.Column="1"
+                                                    Width="115"
+                                                    Height="25"
+                                                    HorizontalAlignment="Left"
+                                                    CornerRadius="5"
+                                                    Background="#E8F1FF">
+                                                    <TextBlock x:Name="ControlModeText"
+                                                           Text="REMOTE"
+                                                           FontSize="15"
+                                                           FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryGreenBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                            <!-- OPERATING MODE -->
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                       Text="Operating Mode"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border Grid.Column="1"
+                                                    Width="160"
+                                                    Height="28"
+                                                    HorizontalAlignment="Left"
+                                                    Background="#E8F1FF"
+                                                    CornerRadius="5">
+
+                                                    <Grid>
+
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <Button x:Name="AutoModeButton"
+                                                                Grid.Column="0"
+                                                                Margin="2"
+                                                                FontSize="15"
+                                                                Content="AUTO"
+                                                                Style="{StaticResource ModeButtonStyle}"
+                                                                Click="AutoModeButton_Click"/>
+                                                        <Button x:Name="ManualModeButton"
+                                                            Grid.Column="1"
+                                                            Margin="2"
+                                                            Content="MANUAL"
+                                                                FontSize="15"
+                                                            Style="{StaticResource ModeButtonStyle}"
+                                                            Click="ManualModeButton_Click"/>
+                                                    </Grid>
+
+                                                </Border>
+                                            </Grid>
+
+                                            <!-- DEFROST MODE -->
+
+                                            <Grid Grid.Row="2">
+
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+
+                                                <!-- TITLE -->
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="Defrost Mode"
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#374151"
+                                                           VerticalAlignment="Center"/>
+                                                <!-- CHECKBOX + STATUS -->
+                                                <Border Grid.Column="1"
+                                                        Width="150"
+                                                        Height="28"
+                                                        HorizontalAlignment="Left"
+                                                        Background="#E8F1FF"
+                                                        CornerRadius="5">
+                                                    <StackPanel Orientation="Horizontal"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center">
+                                                        <CheckBox x:Name="DefrostModeCheckBox"
+                                                                  VerticalAlignment="Center"
+                                                                  Checked="DefrostModeCheckBox_Checked"
+                                                                  Unchecked="DefrostModeCheckBox_Unchecked"
+                                                                  Cursor="Hand">
+                                                            <CheckBox.LayoutTransform>
+                                                                <ScaleTransform ScaleX="1.1"
+                                                                                ScaleY="1.1"/>
+                                                            </CheckBox.LayoutTransform>
+                                                        </CheckBox>
+
+                                                        <TextBlock x:Name="DefrostModeText"
+                                                                   Text="MANUAL"
+                                                                   Margin="7,0,0,0"
+                                                                   FontSize="15"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="#6B7280"
+                                                                   VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="White"
+                                    BorderBrush="#DDE3EA"
+                                    BorderThickness="1"
+                                    CornerRadius="7"
+                                    Margin="0,0,0,10">
+
+                                    <StackPanel>
+                                        <Border Style="{StaticResource SectionHeaderStyle}">
+                                            <TextBlock Text="VALVE CONTROL"
+                                                       FontSize="16"
+                                                   Style="{StaticResource SectionHeaderTextStyle}"/>
+                                        </Border>
+                                        <Grid Margin="15,6,15,8">
+
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="40"/>
+                                                <RowDefinition Height="40"/>
+                                                <RowDefinition Height="40"/>
+                                                <RowDefinition Height="40"/>
+                                            </Grid.RowDefinitions>
+                                            <!-- LIQUID -->
+                                            <Grid Grid.Row="2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                       Text="Liquid Solenoid Valve"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border Grid.Column="1"
+                                                    Width="150"
+                                                    Height="27"
+                                                    Background="#E8F1FF"
+                                                    CornerRadius="5">
+
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <Button x:Name="LiquidValveOpenButton"
+                                                            Grid.Column="0"
+                                                            Margin="2"
+                                                            Content="OPEN"
+                                                                FontSize="15"
+                                                            Style="{StaticResource ValveButtonStyle}"
+                                                            Click="LiquidValveOpenButton_Click"/>
+
+                                                        <Button x:Name="LiquidValveCloseButton"
+                                                            Grid.Column="1"
+                                                            Margin="2"
+                                                                FontSize="15"
+                                                            Content="CLOSE"
+                                                            Style="{StaticResource ValveButtonStyle}"
+                                                            Click="LiquidValveCloseButton_Click"/>
+
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                            <!-- SUCTION -->
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                       Text="Suction Solenoid Valve"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border Grid.Column="1"
+                                                    Width="150"
+                                                    Height="27"
+                                                    Background="#E8F1FF"
+                                                    CornerRadius="5">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Button x:Name="SuctionValveOpenButton"
+                                                            Grid.Column="0"
+                                                            Margin="2"
+                                                            Content="OPEN"
+                                                                FontSize="15"
+                                                            Style="{StaticResource ValveButtonStyle}"
+                                                            Click="SuctionValveOpenButton_Click"/>
+
+                                                        <Button x:Name="SuctionValveCloseButton"
+                                                            Grid.Column="1"
+                                                            Margin="2"
+                                                                FontSize="15"
+                                                            Content="CLOSE"
+                                                            Style="{StaticResource ValveButtonStyle}"
+                                                            Click="SuctionValveCloseButton_Click"/>
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                            <!-- HOT GAS RETURN -->
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                       Text="Hot Gas Return Valve"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border Grid.Column="1"
+                                                    Width="150"
+                                                    Height="27"
+                                                    Background="#E8F1FF"
+                                                    CornerRadius="5">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Button x:Name="HotGasReturnOpenButton"
+                                                            Grid.Column="0"
+                                                            Margin="2"
+                                                            Content="OPEN"
+                                                                FontSize="15"
+                                                            Style="{StaticResource ValveButtonStyle}"
+                                                            Click="HotGasReturnOpenButton_Click"/>
+                                                        <Button x:Name="HotGasReturnCloseButton"
+                                                            Grid.Column="1"
+                                                            Margin="2"
+                                                            Content="CLOSE"
+                                                                FontSize="15"
+                                                            Style="{StaticResource ValveButtonStyle}"
+                                                            Click="HotGasReturnCloseButton_Click"/>
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                            <!-- HOT GAS SOLENOID -->
+                                            <Grid Grid.Row="3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                       Text="Hot Gas Solenoid Valve"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border Grid.Column="1"
+                                                    Width="150"
+                                                    Height="27"
+                                                    Background="#E8F1FF"
+                                                    CornerRadius="5">
+
+                                                    <Grid>
+
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <Button x:Name="HotGasSolenoidOpenButton"
+                                                            Grid.Column="0"
+                                                            Margin="2"
+                                                            Content="OPEN"
+                                                                FontSize="15"
+                                                            Style="{StaticResource ValveButtonStyle}"
+                                                            Click="HotGasSolenoidOpenButton_Click"/>
+
+                                                        <Button x:Name="HotGasSolenoidCloseButton"
+                                                            Grid.Column="1"
+                                                            Margin="2"
+                                                            Content="CLOSE"
+                                                                FontSize="15"
+                                                            Style="{StaticResource ValveButtonStyle}"
+                                                            Click="HotGasSolenoidCloseButton_Click"/>
+
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                                <!-- FANS / HEATER -->
+
+                                <Border Background="White"
+                                    BorderBrush="#DDE3EA"
+                                    BorderThickness="1"
+                                    CornerRadius="7"
+                                    Margin="0,0,0,10">
+
+                                    <StackPanel>
+                                        <Border Style="{StaticResource SectionHeaderStyle}">
+                                            <TextBlock Text="FANS &amp; HEATER"
+                                                       FontSize="16"
+                                                   Style="{StaticResource SectionHeaderTextStyle}"/>
+
+                                        </Border>
+                                        <!-- FAN ACTION BUTTONS -->
+                                        <Grid Margin="0,10,0,5"
+                                          HorizontalAlignment="Center">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="145"/>
+                                                <ColumnDefinition Width="145"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button x:Name="FansOnButton"
+                                                    Style="{StaticResource ValveButtonStyle}"
+                                                Grid.Column="0"
+                                                Width="135"
+                                                Height="32"
+                                                Margin="4"
+                                                Content="▶  FANS START"
+                                                Background="{StaticResource PrimaryGreenBrush}"
+                                                Foreground="White"
+                                                FontSize="15"
+                                                FontWeight="Bold"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                Click="FansOnButton_Click">
+
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                            CornerRadius="5">
+                                                            <ContentPresenter
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                            
+                                            <Button x:Name="FansOffButton"
+                                                    Style="{StaticResource ValveButtonStyle}"
+                                                Grid.Column="1"
+                                                Width="135"
+                                                Height="32"
+                                                Margin="4"
+                                                Content="■  FANS STOP"
+                                                Background="#D62828"
+                                                Foreground="White"
+                                                FontSize="15"
+                                                FontWeight="Bold"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                Click="FansOffButton_Click">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                            CornerRadius="5">
+                                                            <ContentPresenter
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </Grid>
+
+                                        <Rectangle Height="1"
+                                               Fill="#E3E8EE"
+                                               Margin="15,3"/>
+                                        <!-- FAN STATUS GRID -->
+
+                                        <Grid Margin="15,3,15,5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="36"/>
+                                                <RowDefinition Height="36"/>
+                                                <RowDefinition Height="36"/>
+                                            </Grid.RowDefinitions>
+                                            <!-- FAN 1 -->
+                                            <Grid Grid.Row="0"
+                                              Grid.Column="0">
+                                                <TextBlock Text="Fan 1"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border x:Name="Fan1StatusBox"
+                                                    Width="75"
+                                                    Height="24"
+                                                    HorizontalAlignment="Right"
+                                                    CornerRadius="5"
+                                                    Background="#FFECEC">
+                                                    <TextBlock x:Name="Fan1StatusText"
+                                                           Text="OFF"                                                               
+                                                           FontSize="15"
+                                                           FontWeight="Bold"
+                                                           Foreground="#D62828"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                            <!-- FAN 2 -->
+                                            <Grid Grid.Row="0"
+                                              Grid.Column="1"
+                                              Margin="15,0,0,0">
+                                                <TextBlock Text="Fan 2"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border x:Name="Fan2StatusBox"
+                                                    Width="75"
+                                                    Height="24"
+                                                    HorizontalAlignment="Right"
+                                                    CornerRadius="5"
+                                                    Background="#FFECEC">
+                                                    <TextBlock x:Name="Fan2StatusText"
+                                                           Text="OFF"
+                                                           FontSize="15"
+                                                           FontWeight="Bold"
+                                                           Foreground="#D62828"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                            <!-- FAN 3 -->
+                                            <Grid Grid.Row="1"
+                                              Grid.Column="0">
+                                                <TextBlock Text="Fan 3"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border x:Name="Fan3StatusBox"
+                                                    Width="75"
+                                                    Height="24"
+                                                    HorizontalAlignment="Right"
+                                                    CornerRadius="5"
+                                                    Background="#FFECEC">
+                                                    <TextBlock x:Name="Fan3StatusText"
+                                                           Text="OFF"
+                                                           FontSize="15"
+                                                           FontWeight="Bold"
+                                                           Foreground="#D62828"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                            <!-- FAN 4 -->
+                                            <Grid Grid.Row="1"
+                                              Grid.Column="1"
+                                              Margin="15,0,0,0">
+                                                <TextBlock Text="Fan 4"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border x:Name="Fan4StatusBox"
+                                                    Width="75"
+                                                    Height="24"
+                                                    HorizontalAlignment="Right"
+                                                    CornerRadius="5"
+                                                    Background="#FFECEC">
+                                                    <TextBlock x:Name="Fan4StatusText"
+                                                           Text="OFF"
+                                                           FontSize="15"
+                                                           FontWeight="Bold"
+                                                           Foreground="#D62828"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                            <!-- HEATER -->
+                                            <Grid Grid.Row="2"
+                                              Grid.Column="1"
+                                              Margin="15,0,0,0">
+                                                <TextBlock Text="Heater"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"
+                                                       VerticalAlignment="Center"/>
+                                                <Border Width="75"
+                                                    Height="24"
+                                                    HorizontalAlignment="Right"
+                                                    CornerRadius="5"
+                                                    Background="#FFECEC">
+                                                    <TextBlock x:Name="HeaterStatusText"
+                                                           Text="OFF"
+                                                           FontSize="15"
+                                                           FontWeight="Bold"
+                                                           Foreground="#D62828"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <Grid x:Name="CyclesContent"
+                          Visibility="Collapsed">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"                                  
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Width="400"
+                                        Margin="14,12,14,14">
+
+                                <Border Background="White"
+                                        BorderBrush="#DDE3EA"
+                                        BorderThickness="1"
+                                        CornerRadius="7"
+                                        Margin="0,0,0,12">
+                                    <StackPanel>
+
+                                        <Border Style="{StaticResource SectionHeaderStyle}">
+                                            <TextBlock Text="DEFROST CYCLE"
+                                                       FontSize="16"
+                                                       Style="{StaticResource SectionHeaderTextStyle}"/>
+                                        </Border>
+                                        <Grid Margin="15,8,15,10">
+                                            <Grid.RowDefinitions>
+                                                <!-- Column titles -->
+                                                <RowDefinition Height="48"/>
+                                                <!-- Cycle rows -->
+                                                <RowDefinition Height="45"/>
+                                                <RowDefinition Height="45"/>
+                                                <RowDefinition Height="45"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="Cycle"
+                                                           FontSize="14"
+                                                           FontWeight="Bold"
+                                                           Foreground="#6B7280"
+                                                           VerticalAlignment="Center"/>
+                                                <!-- SET / HRS:MINS -->
+
+                                                <StackPanel Grid.Column="1"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="Set"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Foreground="#374151"
+                                           HorizontalAlignment="Center"/>
+
+                                                    <TextBlock Text="hrs : mins"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="#6B7280"
+                                           HorizontalAlignment="Center"/>
+
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="2"
+                                       Text="Bypass"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#6B7280"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+
+                                            </Grid>
+                                            <Grid Grid.Row="1">
+
+                                                <Grid.ColumnDefinitions>
+
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="100"/>
+
+                                                </Grid.ColumnDefinitions>
+
+
+                                                <TextBlock Grid.Column="0"
+                                       Text="Cycle 1"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="#374151"
+                                       VerticalAlignment="Center"/>
+
+
+                                                <Button x:Name="Cycle1TimeButton"
+                                    Grid.Column="1"
+                                    Width="105"
+                                    Height="29"
+                                    Content="02 : 30"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Foreground="#2563EB"
+                                    Background="#E8F1FF"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                                                Style="{StaticResource CycleTimeButtonStyle}"
+                                    HorizontalAlignment="Center"
+                                    Click="Cycle1TimeButton_Click">
+
+                                                    <Button.Template>
+
+                                                        <ControlTemplate TargetType="Button">
+
+                                                            <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="5">
+
+                                                                <ContentPresenter
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+
+                                                            </Border>
+
+                                                        </ControlTemplate>
+
+                                                    </Button.Template>
+
+                                                </Button>
+
+
+                                                <CheckBox x:Name="Cycle1BypassCheckBox"
+                                      Grid.Column="2"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Cursor="Hand"
+                                      Checked="Cycle1BypassCheckBox_Checked"
+                                      Unchecked="Cycle1BypassCheckBox_Unchecked">
+
+                                                    <CheckBox.LayoutTransform>
+                                                        <ScaleTransform ScaleX="1.2"
+                                                    ScaleY="1.2"/>
+                                                    </CheckBox.LayoutTransform>
+
+                                                </CheckBox>
+
+                                            </Grid>
+                                            <Grid Grid.Row="2">
+
+                                                <Grid.ColumnDefinitions>
+
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="100"/>
+
+                                                </Grid.ColumnDefinitions>
+
+
+                                                <TextBlock Grid.Column="0"
+                                       Text="Cycle 2"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="#374151"
+                                       VerticalAlignment="Center"/>
+
+
+                                                <Button x:Name="Cycle2TimeButton"
+                                    Grid.Column="1"
+                                    Width="105"
+                                    Height="29"
+                                    Content="04 : 00"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Foreground="#2563EB"
+                                    Background="#E8F1FF"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                                                Style="{StaticResource CycleTimeButtonStyle}"
+                                    HorizontalAlignment="Center"
+                                    Click="Cycle2TimeButton_Click">
+
+                                                    <Button.Template>
+
+                                                        <ControlTemplate TargetType="Button">
+
+                                                            <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="5">
+
+                                                                <ContentPresenter
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+
+                                                            </Border>
+
+                                                        </ControlTemplate>
+
+                                                    </Button.Template>
+
+                                                </Button>
+
+
+                                                <CheckBox x:Name="Cycle2BypassCheckBox"
+                                      Grid.Column="2"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Cursor="Hand"
+                                      Checked="Cycle2BypassCheckBox_Checked"
+                                      Unchecked="Cycle2BypassCheckBox_Unchecked">
+
+                                                    <CheckBox.LayoutTransform>
+                                                        <ScaleTransform ScaleX="1.2"
+                                                    ScaleY="1.2"/>
+                                                    </CheckBox.LayoutTransform>
+
+                                                </CheckBox>
+
+                                            </Grid>
+                                            <Grid Grid.Row="3">
+
+                                                <Grid.ColumnDefinitions>
+
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="100"/>
+
+                                                </Grid.ColumnDefinitions>
+
+
+                                                <TextBlock Grid.Column="0"
+                                       Text="Cycle 3"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="#374151"
+                                       VerticalAlignment="Center"/>
+
+
+                                                <Button x:Name="Cycle3TimeButton"
+                                    Grid.Column="1"
+                                    Width="105"
+                                    Height="29"
+                                    Content="06 : 00"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Foreground="#2563EB"
+                                    Background="#E8F1FF"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                                        Style="{StaticResource CycleTimeButtonStyle}"
+                                    HorizontalAlignment="Center"
+                                    Click="Cycle3TimeButton_Click">
+
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="5">
+                                                                <ContentPresenter
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                                <CheckBox x:Name="Cycle3BypassCheckBox"
+                                                          Grid.Column="2"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          Cursor="Hand"
+                                                          Checked="Cycle3BypassCheckBox_Checked"
+                                                          Unchecked="Cycle3BypassCheckBox_Unchecked">
+                                                    <CheckBox.LayoutTransform>
+                                                        <ScaleTransform ScaleX="1.2"
+                                                    ScaleY="1.2"/>
+                                                    </CheckBox.LayoutTransform>
+                                                </CheckBox>
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                                <!-- MODE TIME CARD -->
+                                <Border Background="White"
+                                        BorderBrush="#DDE3EA"
+                                        BorderThickness="1"
+                                        CornerRadius="7">
+                                    <StackPanel>
+                                        <Border Style="{StaticResource SectionHeaderStyle}">
+                                            <TextBlock Text="MODE TIME"
+                                                       FontSize="16"
+                                                       Style="{StaticResource SectionHeaderTextStyle}"/>
+                                        </Border>
+                                        <Grid Margin="15,8,15,10">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="52"/>
+                                                <RowDefinition Height="45"/>
+                                                <RowDefinition Height="45"/>
+                                                <RowDefinition Height="45"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="170"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
+                                                <!-- SET POINT -->
+                                                <StackPanel Grid.Column="1"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="Set Point"
+                                                               FontSize="14"
+                                                               FontWeight="Bold"
+                                                               Foreground="#374151"
+                                                               HorizontalAlignment="Center"/>
+                                                    <TextBlock Text="hrs : mins"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#6B7280"
+                                                               HorizontalAlignment="Center"/>
+                                                </StackPanel>
+                                                <!-- ELAPSED -->
+                                                <StackPanel Grid.Column="2"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="Elapsed"
+                                                               FontSize="14"
+                                                               FontWeight="Bold"
+                                                               Foreground="#374151"
+                                                               HorizontalAlignment="Center"/>
+                                                    <TextBlock Text="hrs : mins"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#6B7280"
+                                                               HorizontalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="170"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="Freezing Mode Time"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#374151"
+                                                           VerticalAlignment="Center"/>
+                                                <Border Grid.Column="2"
+                                                        Width="90"
+                                                        Height="26"
+                                                        HorizontalAlignment="Center"
+                                                        Background="#F0F2F4"
+                                                        CornerRadius="5">
+
+                                                    <TextBlock x:Name="FreezingElapsedText"
+                                                               Text="00 : 00"
+                                                               FontSize="13"
+                                                               FontWeight="Bold"
+                                                               Foreground="#374151"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                            <Grid Grid.Row="2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="170"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="Liquid Drain Mode Time"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#374151"
+                                                           VerticalAlignment="Center"/>
+                                                <Button x:Name="LiquidDrainSetPointButton"
+                                                        Grid.Column="1"
+                                                        Width="90"
+                                                        Height="28"
+                                                        Content="00 : 15"
+                                                        Style="{StaticResource CycleTimeButtonStyle}"
+                                                        HorizontalAlignment="Center"
+                                                        Click="LiquidDrainSetPointButton_Click"/>
+
+
+                                                <Border Grid.Column="2"
+                                                        Width="90"
+                                                        Height="26"
+                                                        HorizontalAlignment="Center"
+                                                        Background="#F0F2F4"
+                                                        CornerRadius="5">
+
+                                                    <TextBlock x:Name="LiquidDrainElapsedText"
+                                           Text="00 : 00"
+                                           FontSize="13"
+                                           FontWeight="Bold"
+                                           Foreground="#374151"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                            <Grid Grid.Row="3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="170"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="Defrosting Mode Time"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#374151"
+                                                           VerticalAlignment="Center"/>
+
+                                                <Button x:Name="DefrostingSetPointButton"
+                                                        Grid.Column="1"
+                                                        Width="90"
+                                                        Height="28"
+                                                        Content="00 : 30"
+                                                        Style="{StaticResource CycleTimeButtonStyle}"
+                                                        HorizontalAlignment="Center"
+                                                        Click="DefrostingSetPointButton_Click"/>
+
+                                                <Border Grid.Column="2"
+                                    Width="90"
+                                    Height="26"
+                                    HorizontalAlignment="Center"
+                                    Background="#F0F2F4"
+                                    CornerRadius="5">
+                                                    <TextBlock x:Name="DefrostingElapsedText"
+                                           Text="00 : 00"
+                                           FontSize="13"
+                                           FontWeight="Bold"
+                                           Foreground="#374151"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                    <Grid x:Name="EventsContent"
+                      Visibility="Collapsed">
+                        <Grid HorizontalAlignment="Center"
+                          VerticalAlignment="Top"
+                          Margin="15">
+                            <Border Width="450"
+                                Background="White"
+                                BorderBrush="#DDE3EA"
+                                BorderThickness="1"
+                                CornerRadius="7"
+                                Padding="20">
+                                <StackPanel>
+                                    <Border Style="{StaticResource SectionHeaderStyle}">
+                                        <TextBlock Text="EVENTS"
+                                               Style="{StaticResource SectionHeaderTextStyle}"/>
+
+                                    </Border>
+                                    <TextBlock Text="No events available."
+                                           Foreground="#6B7280"
+                                           FontSize="13"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,30"/>
+                                    <!-- TODO:
+                                     Bind actual event history here
+                                     when event backend is available. -->
+
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                    
+                    <Grid x:Name="MaintenanceContent"
+                          Visibility="Collapsed">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Width="400"  Margin="14,12,14,14">
+                                <Border Background="White"
+                                        BorderBrush="#DDE3EA"
+                                        BorderThickness="1"
+                                        CornerRadius="7"
+                                        Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <!-- HEADER -->
+                                        <Border Style="{StaticResource SectionHeaderStyle}">
+
+                                            <TextBlock Text="VALVE MAINTENANCE"
+                                   FontSize="16"
+                                   Style="{StaticResource SectionHeaderTextStyle}"/>
+                                        </Border>
+                                        <Grid Margin="15,8,15,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                   Text="Valve"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="#6B7280"
+                                   VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="1"
+                                   Text="No. of Operations"
+                                   FontSize="13"
+                                   FontWeight="Bold"
+                                   Foreground="#6B7280"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+
+                                        </Grid>
+                                        <Rectangle Height="1" Fill="#E3E8EE"
+                                                   Margin="15,0"/>
+                                        <Grid Margin="15,0"  Height="42">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                   Text="Liquid Solenoid Valve"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   VerticalAlignment="Center"/>
+
+                                            <Border Grid.Column="1"
+                                Width="90"
+                                Height="27"
+                                Background="#F0F2F4"
+                                CornerRadius="5"
+                                HorizontalAlignment="Center">
+
+                                                <TextBlock x:Name="LiquidValveOperationsText"
+                                       Text="0"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        <!-- SUCTION SOLENOID -->
+                                        <Grid Margin="15,0"  Height="42">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                   Text="Suction Solenoid Valve"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   VerticalAlignment="Center"/>
+
+                                            <Border Grid.Column="1"
+                                Width="90"
+                                Height="27"
+                                Background="#F0F2F4"
+                                CornerRadius="5"
+                                HorizontalAlignment="Center">
+
+                                                <TextBlock x:Name="SuctionValveOperationsText"
+                                       Text="0"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        <!-- HOT GAS RETURN -->
+                                        <Grid Margin="15,0"  Height="42">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                   Text="Hot Gas Return Valve"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   VerticalAlignment="Center"/>
+
+                                            <Border Grid.Column="1"
+                                Width="90"
+                                Height="27"
+                                Background="#F0F2F4"
+                                CornerRadius="5"
+                                HorizontalAlignment="Center">
+                                                <TextBlock x:Name="HotGasReturnOperationsText"
+                                       Text="0"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        <!-- HOT GAS SOLENOID -->
+                                        <Grid Margin="15,0,15,8" Height="42">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                   Text="Hot Gas Solenoid Valve"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   VerticalAlignment="Center"/>
+
+                                            <Border Grid.Column="1"
+                                Width="90"
+                                Height="27"
+                                Background="#F0F2F4"
+                                CornerRadius="5"
+                                HorizontalAlignment="Center">
+
+                                                <TextBlock x:Name="HotGasSolenoidOperationsText"
+                                       Text="0"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                                <Border Background="White"
+                    BorderBrush="#DDE3EA"
+                    BorderThickness="1"
+                    CornerRadius="7">
+                                    <StackPanel>
+                                        <Border Style="{StaticResource SectionHeaderStyle}">
+                                            <TextBlock Text="FAN MAINTENANCE"
+                                   FontSize="16"
+                                   Style="{StaticResource SectionHeaderTextStyle}"/>
+                                        </Border>
+                                        <Grid Margin="15,8,15,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                   Text="Fan"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="#6B7280"
+                                   VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="1"
+                                   Text="Run Hours"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="#6B7280"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+
+                                        </Grid>
+                                        <Rectangle Height="1"
+                               Fill="#E3E8EE"
+                               Margin="15,0"/>
+                                        <!-- FAN 1 -->
+                                        <Grid Margin="15,0"  Height="42">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                   Text="Fan 1"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   VerticalAlignment="Center"/>
+
+                                            <Border Grid.Column="1"
+                                Width="90"
+                                Height="27"
+                                Background="#F0F2F4"
+                                CornerRadius="5"
+                                HorizontalAlignment="Center">
+
+                                                <TextBlock x:Name="Fan1RunHoursText"
+                                       Text="0.00"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        <!-- FAN 2 -->
+                                        <Grid Margin="15,0"  Height="42">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                   Text="Fan 2"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   VerticalAlignment="Center"/>
+
+                                            <Border Grid.Column="1"
+                                Width="90"
+                                Height="27"
+                                Background="#F0F2F4"
+                                CornerRadius="5"
+                                HorizontalAlignment="Center">
+
+                                                <TextBlock x:Name="Fan2RunHoursText"
+                                       Text="0.00"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        <!-- FAN 3 -->
+                                        <Grid Margin="15,0"   Height="42">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                   Text="Fan 3"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   VerticalAlignment="Center"/>
+                                            <Border Grid.Column="1"
+                                Width="90"
+                                Height="27"
+                                Background="#F0F2F4"
+                                CornerRadius="5"
+                                HorizontalAlignment="Center">
+                                                <TextBlock x:Name="Fan3RunHoursText"
+                                       Text="0.00"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        <!-- FAN 4 -->
+                                        <Grid Margin="15,0,15,8"  Height="42">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="125"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                   Text="Fan 4"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   VerticalAlignment="Center"/>
+                                            <Border Grid.Column="1"
+                                Width="90"
+                                Height="27"
+                                Background="#F0F2F4"
+                                CornerRadius="5"
+                                HorizontalAlignment="Center">
+                                                <TextBlock x:Name="Fan4RunHoursText"
+                                       Text="0.00"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
